@@ -95,7 +95,7 @@ Value *CminusfBuilder::visit(ASTVarDeclaration &node) {
 }
 
 
-Value* CminusfBuilder::visit(ASTFunDeclaration &node) {
+Value *CminusfBuilder::visit(ASTFunDeclaration &node) {
     FunctionType *fun_type;
     Type *ret_type;
     std::vector<Type *> param_types;
@@ -135,43 +135,58 @@ Value* CminusfBuilder::visit(ASTFunDeclaration &node) {
         args.push_back(&arg);
     }
     for (unsigned int i = 0; i < node.params.size(); ++i) {
-        auto* param_i = node.params[i]->accept(*this);
+        auto *param_i = node.params[i]->accept(*this);
         args[i]->set_name(node.params[i]->id);
         builder->create_store(args[i], param_i);
         scope.push(args[i]->get_name(), param_i);
     }
     node.compound_stmt->accept(*this);
-    if (builder->get_insert_block()->get_terminator() == nullptr) 
-    {
-        if (context.func->get_return_type()->is_void_type())
+    if (builder->get_insert_block() &&
+        !builder->get_insert_block()->is_terminated()) {
+        if (context.func->get_return_type()->is_void_type()) {
             builder->create_void_ret();
-        else if (context.func->get_return_type()->is_float_type())
+        } else if (context.func->get_return_type()->is_float_type()) {
             builder->create_ret(CONST_FP(0.));
-        else
+        } else {
             builder->create_ret(CONST_INT(0));
+        }
     }
+
     scope.exit();
     return nullptr;
 }
 
-Value* CminusfBuilder::visit(ASTParam &node) {
-    return nullptr;
+Value *CminusfBuilder::visit(ASTParam &node) {
+    if (node.isarray) {
+        Type *ptr_ty = (node.type == TYPE_INT) ? INT32PTR_T : FLOATPTR_T;
+        return builder->create_alloca(ptr_ty);
+    } else {
+        Type *val_ty = (node.type == TYPE_INT) ? INT32_T : FLOAT_T;
+        return builder->create_alloca(val_ty);
+    }
 }
 
-Value* CminusfBuilder::visit(ASTCompoundStmt &node) {
-    // TODO: This function is not complete.
-    // You may need to add some code here
-    // to deal with complex statements. 
-    
+Value *CminusfBuilder::visit(ASTCompoundStmt &node) {
+    bool need_enter = true;
+    if (context.pre_enter_scope) {
+        context.pre_enter_scope = false;
+        need_enter = false;
+    }
+    if (need_enter)
+        scope.enter();
+
     for (auto &decl : node.local_declarations) {
         decl->accept(*this);
     }
 
     for (auto &stmt : node.statement_list) {
         stmt->accept(*this);
-        if (builder->get_insert_block()->get_terminator() == nullptr)
+        if (builder->get_insert_block()->is_terminated())
             break;
     }
+
+    if (need_enter)
+        scope.exit();
     return nullptr;
 }
 
