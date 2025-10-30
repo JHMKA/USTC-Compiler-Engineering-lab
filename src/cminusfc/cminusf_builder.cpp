@@ -57,11 +57,43 @@ Value* CminusfBuilder::visit(ASTNum &node) {
     return CONST_FP(node.f_val);
 }
 
-Value* CminusfBuilder::visit(ASTVarDeclaration &node) {
-    // TODO: This function is empty now.
-    // Add some code here.
-    return nullptr;
+
+Value *CminusfBuilder::visit(ASTVarDeclaration &node) {
+  
+    Type *elem_ty = (node.type == TYPE_INT) ? INT32_T : FLOAT_T;
+
+    bool is_global = (context.func == nullptr);
+    if (!node.num) {
+        if (is_global) {
+            auto gv = GlobalVariable::create(
+                node.id, module.get(), elem_ty, /*is_const=*/false,
+                ConstantZero::get(elem_ty, module.get()));
+            scope.push(node.id, gv);
+            return gv;
+        } else {
+            auto addr = builder->create_alloca(elem_ty);
+            scope.push(node.id, addr);
+            return addr;
+        }
+    } else {
+
+        auto num = node.num->i_val; 
+        auto arr_ty = ArrayType::get(elem_ty, num);
+
+        if (is_global) {
+            auto gv = GlobalVariable::create(
+                node.id, module.get(), arr_ty, /*is_const=*/false,
+                ConstantZero::get(arr_ty, module.get()));
+            scope.push(node.id, gv);
+            return gv;
+        } else {
+            auto addr = builder->create_alloca(arr_ty);
+            scope.push(node.id, addr);
+            return addr;
+        }
+    }
 }
+
 
 Value* CminusfBuilder::visit(ASTFunDeclaration &node) {
     FunctionType *fun_type;
