@@ -236,9 +236,28 @@ Value* CminusfBuilder::visit(ASTSelectionStmt &node) {
     return nullptr;
 }
 
-Value* CminusfBuilder::visit(ASTIterationStmt &node) {
-    // TODO: This function is empty now.
-    // Add some code here.
+Value *CminusfBuilder::visit(ASTIterationStmt &node) {
+    auto *func = context.func;
+    auto *condBB = BasicBlock::create(module.get(), "", func);
+    auto *bodyBB = BasicBlock::create(module.get(), "", func);
+    auto *afterBB = BasicBlock::create(module.get(), "", func);
+    builder->create_br(condBB);
+    builder->set_insert_point(condBB);
+    auto *cond_val_any = node.expression->accept(*this);
+    Value *cond_i1 = nullptr;
+    if (cond_val_any->get_type()->is_integer_type()) {
+        cond_i1 = builder->create_icmp_ne(cond_val_any, CONST_INT(0));
+    } else {
+        cond_i1 = builder->create_fcmp_ne(cond_val_any, CONST_FP(0.));
+    }
+    builder->create_cond_br(cond_i1, bodyBB, afterBB);
+    builder->set_insert_point(bodyBB);
+    node.statement->accept(*this);
+    if (!builder->get_insert_block()->is_terminated()) {
+        builder->create_br(condBB);
+    }
+
+    builder->set_insert_point(afterBB);
     return nullptr;
 }
 
