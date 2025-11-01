@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../../libpasses.a CMakeFiles/passes.dir/DeadCode.cpp.o CMakeFiles/passes.dir/Dominators.cpp.o CMakeFiles/passes.dir/FuncInfo.cpp.o CMakeFiles/passes.dir/Mem2Reg.cpp.o CMakeFiles/passes.dir/ConstPropagation.cpp.o CMakeFiles/passes.dir/FunctionInline.cpp.o
+/usr/bin/ranlib ../../libpasses.a
