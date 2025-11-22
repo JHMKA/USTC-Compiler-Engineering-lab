@@ -1,7 +1,10 @@
 #include "DeadCode.hpp"
 #include "Instruction.hpp"
 #include "logging.hpp"
+#include "BasicBlock.hpp"
 #include <memory>
+#include <unordered_set>
+#include <stdexcept>
 #include <vector>
 
 
@@ -12,11 +15,13 @@ void DeadCode::run() {
     do {
         changed = false;
         for (auto &F : m_->get_functions()) {
-            auto func = &F;
-            changed |= clear_basic_blocks(func);
-            mark(func);
-            changed |= sweep(func);
+                auto func = &F;
+                changed |= clear_basic_blocks(func);
+                marked.clear();
+                mark(func);
+                changed |= sweep(func);
         }
+        sweep_globally();
     } while (changed);
     LOG_INFO << "dead code pass erased " << ins_count << " instructions";
 }
@@ -32,6 +37,9 @@ bool DeadCode::clear_basic_blocks(Function *func) {
         }
     }
     for (auto &bb : to_erase) {
+        for (auto succ_bb : bb->get_succ_basic_blocks()) {
+            succ_bb->remove_pre_basic_block(bb);
+        }
         bb->erase_from_parent();
         delete bb;
     }
@@ -39,8 +47,17 @@ bool DeadCode::clear_basic_blocks(Function *func) {
 }
 
 void DeadCode::mark(Function *func) {
-    // TODO
-    
+    for (auto &bb : func->get_basic_blocks())
+     {
+        for (auto &instr : bb.get_instructions()) 
+        {
+            Instruction *ins = &instr;
+            if (is_critical(ins)) 
+            {
+                mark(ins);
+            }
+        }
+    }
 }
 
 void DeadCode::mark(Instruction *ins) {
