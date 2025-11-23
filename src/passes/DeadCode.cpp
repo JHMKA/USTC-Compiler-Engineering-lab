@@ -61,27 +61,50 @@ void DeadCode::mark(Function *func) {
 }
 
 void DeadCode::mark(Instruction *ins) {
-    // TODO
+    if (marked.find(ins) != marked.end()) {
+        return;
+    }
+    marked[ins] = true;
+    for (auto operand : ins->get_operands()) {
+        if (!operand) continue;
+        if (auto def_ins = dynamic_cast<Instruction *>(operand)) {
+            mark(def_ins);
+        }
+    }
 }
+
 
 bool DeadCode::sweep(Function *func) {
-    // TODO: 删除无用指令
-    // 提示：
-    // 1. 遍历函数的基本块，删除所有标记为true的指令
-    // 2. 删除指令后，可能会导致其他指令的操作数变为无用，因此需要再次遍历函数的基本块
-    // 3. 如果删除了指令，返回true，否则返回false
-    // 4. 注意：删除指令时，需要先删除操作数的引用，然后再删除指令本身
-    // 5. 删除指令时，需要注意指令的顺序，不能删除正在遍历的指令
-    std::unordered_set<Instruction *> wait_del{};
-
+    bool changed = false;
     // 1. 收集所有未被标记的指令
- 
+    for (auto &bb : func->get_basic_blocks()) {
+        std::vector<Instruction *> wait_del;
 
-    // 2. 执行删除
-  
+        for (auto &instr : bb.get_instructions()) {
+            Instruction *ins = &instr;
+            if (marked.find(ins) == marked.end() || !marked[ins]) {
+                wait_del.push_back(ins);
+            }
+        }
+        for (auto ins : wait_del) {
+            changed = true;
+            auto users = ins->get_use_list();
+            for (auto &use : users) {
+                User *user = use.val_;
+                if (auto user_ins = dynamic_cast<Instruction *>(user)) {
+                    user_ins->remove_operand(use.arg_no_);
+                }
+            }
+            ins->remove_all_operands();
+            bb.remove_instr(ins);
+            ins_count++;
+            delete ins;
+        }
+    }
     
-    return not wait_del.empty(); // changed
+    return changed;
 }
+
 
 bool DeadCode::is_critical(Instruction *ins) {
     // TODO: 判断指令是否是无用指令
