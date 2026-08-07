@@ -1,7 +1,50 @@
-(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$ curl http://127.0.0.1:30000/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "What is the capital of France?",
-    "sampling_params": {"temperature": 0, "max_new_tokens": 128}
-  }'
-{"text":"kop&_n? (****  /*## 下面 -  部门: 2023 05 - 16 calendar (## 部门: 国家: 全部 部门: 2023年06 - 08 T 国家: 1. 1.2 1:2 2.1 领域: 1. 1.1 领域 领域: 1. 领域 1. 1.1 领域 1. 领域 1. 1.1 领域## 领域 领域 领域 领域 领域 1. 1.1","output_ids":[81641,8,65,80,33,343,666,666,223,15420,372,223,10352,565,223,223,4898,28,223,939,21,223,2642,565,223,926,21730,343,372,223,4898,28,223,3030,28,223,7422,223,4898,28,223,939,21,695,3398,565,223,3019,330,223,3030,28,223,19,16,223,19,16,20,223,19,28,20,223,20,16,19,223,7573,28,223,19,16,223,19,16,19,223,7573,223,7573,28,223,19,16,223,7573,223,19,16,223,19,16,19,223,7573,223,19,16,223,7573,223,19,16,223,19,16,19,223,7573,372,223,7573,223,7573,223,7573,223,7573,223,7573,223,19,16,223,19,16,19],"meta_info":{"id":"af9d727d503145b2b671586d6f3934a2","finish_reason":{"type":"length","length":128},"prompt_tokens":7,"weight_version":"default","num_retractions":0,"reasoning_tokens":0,"completion_tokens":128,"cached_tokens":0,"cached_tokens_details":null,"dp_rank":null,"e2e_latency":4.2531652161851525,"response_sent_to_client_ts":1786095515.4503434}}(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+source /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
+source /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
+
+export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3
+unset ASCEND_VISIBLE_DEVICES
+unset SGLANG_DSV4_FP4_EXPERTS
+unset SGLANG_DSV4_FP4_DEQUANT
+unset FORCE_DRAFT_MODEL_NON_QUANT
+
+export SGLANG_PYSPY_DUMP_BEFORE_CRASH=False
+export SGLANG_CUDA_COREDUMP_BEFORE_CRASH=False
+export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+export STREAMS_PER_DEVICE=32
+export INF_NAN_MODE_FORCE_DISABLE=1
+
+export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
+export SGLANG_OPT_FP8_WO_A_GEMM=0
+export SGLANG_OPT_USE_OVERLAP_STORE_CACHE=False
+export SGLANG_OPT_FUSE_WQA_WKV=0
+export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
+export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
+export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
+export SGLANG_OPT_USE_TILELANG_MHC_POST=False
+
+cd /home/w00580100/z50065249/sglang
+
+python -m sglang.launch_server \
+    --model-path /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8 \
+    --served-model-name deepseek-v4-flash-0731-w4a8 \
+    --tp-size 4 \
+    --device npu \
+    --dtype bfloat16 \
+    --quantization modelslim \
+    --trust-remote-code \
+    --host 0.0.0.0 \
+    --port 30000 \
+    --attention-backend dsv4 \
+    --page-size 128 \
+    --kv-cache-dtype bfloat16 \
+    --mem-fraction-static 0.70 \
+    --context-length 65536 \
+    --max-total-tokens 65536 \
+    --max-prefill-tokens 16384 \
+    --max-running-requests 8 \
+    --chunked-prefill-size -1 \
+    --disable-cuda-graph \
+    --reasoning-parser deepseek-v4 \
+    --tool-call-parser deepseekv4 \
+    2>&1 | tee sglang-dsv4-w4a8.log
