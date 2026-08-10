@@ -1,8 +1,38 @@
-curl -s http://127.0.0.1:30000/v1/completions \
+如果只想得到 Paris，最简单的方法是限制生成长度：
+curl -s http://127.0.0.1:30000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "The capital of France is",
+    "sampling_params": {
+      "temperature": 0,
+      "max_new_tokens": 3
+    }
+  }'
+或者把提示写成明确问答，并要求只回答城市：
+curl -s http://127.0.0.1:30000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "Question: What is the capital of France?\nAnswer with only the city name.\nAnswer:",
+    "sampling_params": {
+      "temperature": 0,
+      "max_new_tokens": 8
+    }
+  }'
+如果需要更稳定的指令遵循，使用 OpenAI Chat 接口更合适：
+curl -s http://127.0.0.1:30000/v1/chat/completions \
   -H 'Content-Type: application/json' \
   -d '{
     "model": "deepseek-v4-flash-0731-w4a8",
-    "prompt": "The capital of France is",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Answer concisely with only the requested city name."
+      },
+      {
+        "role": "user",
+        "content": "What is the capital of France?"
+      }
+    ],
     "temperature": 0,
-    "max_tokens": 32
+    "max_tokens": 8
   }'
