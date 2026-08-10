@@ -1,2 +1,267 @@
-BasedOnStyle: LLVM
-IndentWidth: 4
+可以直接使用 SGLang 自带的 benchmark.serving。建议把测评分成：单请求延迟、并发吞吐、长上下文、MTP A/B 四组。
+先在服务器另开一个终端，保持服务运行：
+conda activate zpc_py311
+cd /home/w00580100/z50065249/sglang
+
+MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+RESULT_DIR=/tmp/dsv4_benchmark_$(date +%Y%m%d_%H%M%S)
+mkdir -p "$RESULT_DIR"
+
+curl -s http://127.0.0.1:30000/health
+curl -s http://127.0.0.1:30000/model_info | python -m json.tool
+测评期间建议在另一个终端监控：
+watch -n 1 npu-smi info
+1. TTFT、TPOT、ITL 和端到端延迟
+这是单请求延迟测试。不要加 --disable-stream，否则无法正确计算 TTFT。
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --host 127.0.0.1 \
+  --port 30000 \
+  --model deepseek-v4-flash-0731-w4a8 \
+  --tokenizer "$MODEL" \
+  --dataset-name random \
+  --random-input-len 1024 \
+  --random-output-len 256 \
+  --random-range-ratio 1.0 \
+  --num-prompts 32 \
+  --max-concurrency 1 \
+  --request-rate inf \
+  --warmup-requests 4 \
+  --flush-cache \
+  --extra-request-body '{"temperature":0,"top_p":1}' \
+  --output-details \
+  --output-file "$RESULT_DIR/latency_c1.jsonl"
+重点看输出中的：
+Mean/Median/P99 TTFT：首个 token 延迟
+Mean/Median TPOT：除首 token 外，每个输出 token 的平均耗时
+Mean/Median/P99 ITL：相邻输出 token 的间隔
+Mean/Median/P99 E2E Latency：整个请求延迟
+Output token throughput：生成吞吐
+Accept length：如果当前版本导出了推测解码统计，可以看到 MTP 平均接受长度
+单并发 TTFT 更接近模型本身的首 token 性能；高并发 TTFT 会包含排队时间。
+2. 测量最大 token 吞吐量
+首先测试当前启动配置。你现在的 --max-running-requests 4 会限制同时执行的请求数量，因此吞吐大概率在并发 4 左右开始趋于饱和。
+for CONCURRENCY in 1 2 4 8 16; do
+  echo "===== concurrency=${CONCURRENCY} ====="
+
+  python -m sglang.benchmark.serving \
+    --backend sglang \
+    --host 127.0.0.1 \
+    --port 30000 \
+    --model deepseek-v4-flash-0731-w4a8 \
+    --tokenizer "$MODEL" \
+    --dataset-name random \
+    --random-input-len 1024 \
+    --random-output-len 256 \
+    --random-range-ratio 1.0 \
+    --num-prompts 128 \
+    --max-concurrency "$CONCURRENCY" \
+    --request-rate inf \
+    --warmup-requests 4 \
+    --extra-request-body '{"temperature":0,"top_p":1}' \
+    --output-details \
+    --output-file "$RESULT_DIR/throughput_c${CONCURRENCY}.jsonl"
+done
+判断最大吞吐时主要看：
+Output token throughput (tok/s)：解码生成吞吐
+Input token throughput (tok/s)：Prefill 吞吐
+Total token throughput (tok/s)：输入和输出合计
+Request throughput (req/s)：请求吞吐
+取所有并发等级里最高的 Output token throughput，就是当前启动参数下的最大生成吞吐。
+注意：并发 8、16 时，由于服务端最多运行 4 个请求，多出来的请求会排队。这仍然能测出饱和吞吐，但 P99 TTFT 会明显升高。
+如果并发 4 时 NPU 利用率仍然不高，可以重新启动服务并尝试：
+--max-running-requests 16 \
+--cuda-graph-bs 1 2 4 8 16
+但这会增加 KV Cache 和 Graph 内存占用，建议先尝试 8，再尝试 16。
+3. 测不同输入/输出负载
+Prefill 吞吐测试
+长输入、短输出，主要考查 Prefill：
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --host 127.0.0.1 \
+  --port 30000 \
+  --model deepseek-v4-flash-0731-w4a8 \
+  --tokenizer "$MODEL" \
+  --dataset-name random \
+  --random-input-len 8000 \
+  --random-output-len 32 \
+  --random-range-ratio 1.0 \
+  --num-prompts 32 \
+  --max-concurrency 4 \
+  --request-rate inf \
+  --warmup-requests 4 \
+  --output-file "$RESULT_DIR/prefill_8k.jsonl"
+Decode 吞吐测试
+短输入、长输出，主要考查 Decode、CUDA Graph 和 MTP：
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --host 127.0.0.1 \
+  --port 30000 \
+  --model deepseek-v4-flash-0731-w4a8 \
+  --tokenizer "$MODEL" \
+  --dataset-name random \
+  --random-input-len 128 \
+  --random-output-len 1024 \
+  --random-range-ratio 1.0 \
+  --num-prompts 64 \
+  --max-concurrency 4 \
+  --request-rate inf \
+  --warmup-requests 4 \
+  --extra-request-body '{"temperature":0,"top_p":1}' \
+  --output-file "$RESULT_DIR/decode_1k.jsonl"
+MTP 的收益一般在输出较长时更容易观察，32 个输出 token 太短，不适合评估 MTP。
+4. 上下文长度测试
+需要区分三个概念：
+模型配置声明的最大长度：可能是 1,048,576
+当前服务限制：你启动时设置的是 --context-length 32768
+当前 Prefill 限制：你设置的是 --max-prefill-tokens 8192
+因此，当前服务不能直接用单个请求验证超过 8192 token 的输入。即便模型配置声明支持 1M，当前服务也只开放了 32K。
+如果要验证完整 32K，重新启动时把：
+--max-prefill-tokens 8192
+改成：
+--max-prefill-tokens 32768
+保持：
+--context-length 32768 \
+--max-total-tokens 32768
+然后单并发逐级测试：
+for INPUT_LEN in 8000 16000 24000 30000 32000; do
+  echo "===== input_len=${INPUT_LEN} ====="
+
+  python -m sglang.benchmark.serving \
+    --backend sglang \
+    --host 127.0.0.1 \
+    --port 30000 \
+    --model deepseek-v4-flash-0731-w4a8 \
+    --tokenizer "$MODEL" \
+    --dataset-name random \
+    --random-input-len "$INPUT_LEN" \
+    --random-output-len 128 \
+    --random-range-ratio 1.0 \
+    --num-prompts 4 \
+    --max-concurrency 1 \
+    --request-rate inf \
+    --warmup-requests 1 \
+    --flush-cache \
+    --extra-request-body '{"temperature":0,"top_p":1}' \
+    --output-details \
+    --output-file "$RESULT_DIR/context_${INPUT_LEN}.jsonl"
+done
+判定“可用上下文长度”不能只看请求是否成功，还要检查：
+是否出现 OOM
+输出是否正常、没有乱码
+TTFT 是否不可接受
+服务进程是否稳定
+运行后下一次请求是否还能正常返回
+32000 + 128 < 32768，因此最后一组仍在当前上下文限制内。
+不建议直接把服务改成 1M 测试。4×64 GB 910B3 能否容纳 1M KV Cache，需要结合模型 KV 结构、并发数和静态内存池逐级验证，不能仅根据 config.json 判断。
+5. 精确测量 MTP 加速比
+MTP 必须做严格的 ON/OFF 对照实验，不能只看开启后的吞吐。
+两组服务应保持以下内容完全相同：
+模型、量化权重
+TP/DP/EP 配置
+CUDA Graph
+Overlap
+Radix Cache
+输入输出长度
+并发数
+温度
+服务端内存参数
+唯一变量是 MTP/EAGLE。
+MTP OFF 基线
+重启时删除这些环境变量：
+unset SGLANG_ENABLE_SPEC_V2
+unset SGLANG_ENABLE_OVERLAP_PLAN_STREAM
+unset FORCE_DRAFT_MODEL_NON_QUANT
+并从启动命令中删除：
+--speculative-algorithm EAGLE \
+--speculative-num-steps 2 \
+--speculative-eagle-topk 1 \
+--speculative-num-draft-tokens 3
+启动成功后运行：
+for CONCURRENCY in 1 4; do
+  python -m sglang.benchmark.serving \
+    --backend sglang \
+    --host 127.0.0.1 \
+    --port 30000 \
+    --model deepseek-v4-flash-0731-w4a8 \
+    --tokenizer "$MODEL" \
+    --dataset-name random \
+    --random-input-len 1024 \
+    --random-output-len 512 \
+    --random-range-ratio 1.0 \
+    --num-prompts 64 \
+    --max-concurrency "$CONCURRENCY" \
+    --request-rate inf \
+    --warmup-requests 4 \
+    --extra-request-body '{"temperature":0,"top_p":1}' \
+    --output-details \
+    --output-file "$RESULT_DIR/mtp_off_c${CONCURRENCY}.jsonl"
+done
+MTP ON
+使用你现在已经正常运行的 EAGLE/MTP 启动命令重新启动，再执行完全相同的测试：
+for CONCURRENCY in 1 4; do
+  python -m sglang.benchmark.serving \
+    --backend sglang \
+    --host 127.0.0.1 \
+    --port 30000 \
+    --model deepseek-v4-flash-0731-w4a8 \
+    --tokenizer "$MODEL" \
+    --dataset-name random \
+    --random-input-len 1024 \
+    --random-output-len 512 \
+    --random-range-ratio 1.0 \
+    --num-prompts 64 \
+    --max-concurrency "$CONCURRENCY" \
+    --request-rate inf \
+    --warmup-requests 4 \
+    --extra-request-body '{"temperature":0,"top_p":1}' \
+    --output-details \
+    --output-file "$RESULT_DIR/mtp_on_c${CONCURRENCY}.jsonl"
+done
+计算方式：
+吞吐加速比 = MTP_ON 的 Output token throughput
+             ÷ MTP_OFF 的 Output token throughput
+
+解码延迟加速比 = MTP_OFF 的 Median TPOT
+                 ÷ MTP_ON 的 Median TPOT
+
+端到端加速比 = MTP_OFF 的 Median E2E latency
+               ÷ MTP_ON 的 Median E2E latency
+例如：
+MTP OFF：310 tok/s
+MTP ON ：465 tok/s
+吞吐加速比 = 465 / 310 = 1.50×
+还应同时关注 Accept length：
+接近 1.0：草稿 token 很少被接受，MTP 收益通常较低
+明显大于 1.0：一次验证接受多个 token，说明推测解码有效
+接受长度高，但吞吐没有提升：可能是验证开销、通信或 Graph 没覆盖对应 batch size
+随机 token 输入不一定符合真实语言分布，可能低估 MTP 接受率。最终 MTP 测试最好再补一组真实中文/英文问答数据。
+6. 测 Radix Cache 收益
+使用共享长前缀数据集：
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --host 127.0.0.1 \
+  --port 30000 \
+  --model deepseek-v4-flash-0731-w4a8 \
+  --tokenizer "$MODEL" \
+  --dataset-name generated-shared-prefix \
+  --gsp-num-groups 4 \
+  --gsp-prompts-per-group 16 \
+  --gsp-system-prompt-len 4096 \
+  --gsp-question-len 128 \
+  --gsp-output-len 128 \
+  --max-concurrency 4 \
+  --request-rate inf \
+  --warmup-requests 4 \
+  --output-file "$RESULT_DIR/radix_shared_prefix.jsonl"
+然后用 --disable-radix-cache 重启服务，执行同样测试。比较 TTFT、输入吞吐和 E2E 延迟即可。
+最后应形成这样一张结果表：
+测试	并发	输入/输出	P50 TTFT	P99 TTFT	TPOT	输出 tok/s	MTP 接受长度
+MTP OFF	1	1024/512					—
+MTP ON	1	1024/512					
+MTP OFF	4	1024/512					—
+MTP ON	4	1024/512					
+
+
+
+
