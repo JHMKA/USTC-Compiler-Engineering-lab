@@ -1,43 +1,59 @@
+cd /home/w00580100/z50065249/sglang
 
-[2026-08-10 14:58:28 DP2 TP2 EP2] Prefill batch, #new-seq: 1, #new-token: 128, #cached-token: 0, full token usage: 0.00, swa token usage: 0.04, #running-req: 0, #queue-req: 0, #pending-token: 0, npu graph: False, input throughput (token/s): 0.30
-[2026-08-10 14:58:30 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 128, full token usage: 0.00, #swa token: 128, swa token usage: 0.04, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 0.09, #queue-req: 0
-[2026-08-10 14:58:32 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 128, full token usage: 0.00, #swa token: 128, swa token usage: 0.04, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.26, #queue-req: 0
-[2026-08-10 14:58:35 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.98, #queue-req: 0
-[2026-08-10 14:58:37 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
-[2026-08-10 14:58:39 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.30, #queue-req: 0
-[2026-08-10 14:58:41 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.15, #queue-req: 0
-[2026-08-10 14:58:44 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.28, #queue-req: 0
-[2026-08-10 14:58:46 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.75, #queue-req: 0
-[2026-08-10 14:58:48 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.84, #queue-req: 0
-[2026-08-10 14:58:50 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.00, #queue-req: 0
-[2026-08-10 14:58:52 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
-[2026-08-10 14:58:55 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
-[2026-08-10 14:58:57 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
-[2026-08-10 14:58:59 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.55, #queue-req: 0
-[2026-08-10 14:59:01 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
-[2026-08-10 14:59:04 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.05, #queue-req: 0
-[2026-08-10 14:59:06 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.27, #queue-req: 0
-[2026-08-10 14:59:08 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.04, #queue-req: 0
-[2026-08-10 14:59:10 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 384, swa token usage: 0.12, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.06, #queue-req: 0
-[2026-08-10 14:59:12 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.09, #queue-req: 0
-[2026-08-10 14:59:15 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
-[2026-08-10 14:59:17 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.12, #queue-req: 0
-[2026-08-10 14:59:19 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.17, #queue-req: 0
-[2026-08-10 14:59:21 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.18, #queue-req: 0
-[2026-08-10 14:59:23 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.94, #queue-req: 0
-[2026-08-10 14:59:26 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.03, #queue-req: 0
-[2026-08-10 14:59:28 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
-[2026-08-10 14:59:30 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
-[2026-08-10 14:59:32 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
-[2026-08-10 14:59:35 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.13, #queue-req: 0
-[2026-08-10 14:59:37 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.93, #queue-req: 0
-[2026-08-10 14:59:39 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.92, #queue-req: 0
-[2026-08-10 14:59:41 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.53, #queue-req: 0
-[2026-08-10 14:59:44 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.39, #queue-req: 0
-[2026-08-10 14:59:46 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 384, swa token usage: 0.12, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.75, #queue-req: 0
-[2026-08-10 14:59:48 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.81, #queue-req: 0
-[2026-08-10 14:59:50 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.73, #queue-req: 0
-[2026-08-10 14:59:53 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.03, #queue-req: 0
-[2026-08-10 14:59:55 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1664, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.57, #queue-req: 0
-[2026-08-10 14:59:57 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1664, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.29, #queue-req: 0
-[2026-08-10 14:59:58] INFO:     127.0.0.1:56176 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+sed -n \
+  '/def _draft_extend_for_decode/,/select_index/p' \
+  python/sglang/srt/speculative/eagle_worker_v2.py |
+head -n 50
+
+MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+
+python - <<'PY'
+import json
+from pathlib import Path
+
+model = Path("/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8")
+
+config = json.loads((model / "config.json").read_text())
+index = json.loads(
+    (model / "quant_model_weights.safetensors.index.json").read_text()
+)
+
+weight_map = index.get("weight_map", {})
+keys = list(weight_map)
+
+patterns = (
+    "model.layers.43",
+    "mtp",
+    "nextn",
+    "shared_head",
+    "e_proj",
+    "h_proj",
+    "enorm",
+    "hnorm",
+)
+
+print("num_hidden_layers:",
+      config.get("num_hidden_layers"))
+print("num_nextn_predict_layers:",
+      config.get("num_nextn_predict_layers"))
+print("total indexed weights:", len(keys))
+
+matched = [
+    key for key in keys
+    if any(pattern in key.lower() for pattern in patterns)
+]
+
+print("MTP/NextN matched weights:", len(matched))
+for key in matched[:100]:
+    print(key, "->", weight_map[key])
+PY
+
+export FORCE_DRAFT_MODEL_NON_QUANT=1
+
+python - <<'PY'
+import os
+print(
+    "FORCE_DRAFT_MODEL_NON_QUANT =",
+    os.environ.get("FORCE_DRAFT_MODEL_NON_QUANT")
+)
+PY
