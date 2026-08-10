@@ -1,5 +1,4 @@
-
-(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$ curl -s http://127.0.0.1:30000/generate \
+curl -s http://127.0.0.1:30000/generate \
   -H 'Content-Type: application/json' \
   -d '{
     "text": "The capital of France is",
@@ -8,7 +7,3 @@
       "max_new_tokens": 32
     }
   }'
-
-
-
-{"text":" Paris. The capital of Spain is Madrid. The capital of Italy is Rome. The capital of Portugal is Lisbon. The capital of Germany is Berlin. The capital","output_ids":[11111,16,455,6102,294,16603,344,29168,16,455,6102,294,14251,344,16235,16,455,6102,294,29585,344,76405,16,455,6102,294,10322,344,17575,16,455,6102],"meta_info":{"id":"dc6dcacdf5fa423d8b780fb0d9372d93","finish_reason":{"type":"length","length":32},"prompt_tokens":5,"weight_version":"default","num_retractions":0,"reasoning_tokens":0,"completion_tokens":32,"cached_tokens":0,"cached_tokens_details":null,"dp_rank":0,"e2e_latency":32.41750931274146,"response_sent_to_client_ts":1786333111.0697768}}(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$
