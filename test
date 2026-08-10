@@ -1,2 +1,8 @@
+python - <<'PY'
+import deep_ep
+import deep_ep_cpp
 
-ln: failed to create symbolic link './deep_ep_cpp.cpython-311-aarch64-linux-gnu.so': File exists
+print("deep_ep:", list(deep_ep.__path__))
+print("deep_ep_cpp:", deep_ep_cpp.__file__)
+print("DeepEP import: OK")
+PY
