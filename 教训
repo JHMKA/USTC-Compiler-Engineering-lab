@@ -1,0 +1,941 @@
+# DeepSeek-V4-Flash-0731-W4A8 在 Ascend 910B3 上使用 SGLang 部署：经验、故障与最终方案
+
+> 本文记录一次在华为 Ascend 910B3（4 卡，物理卡号 2、3、6、7）服务器上，使用 SGLang 裸机部署 `DeepSeek-V4-Flash-0731-w4a8` ModelSlim 量化模型的完整过程。
+>
+> 文档基于实际模型文件、启动日志、接口输出和当前 SGLang 源码得出。最终方案不使用 Docker、不使用 `nohup`、不启用投机解码，并启用 HiCache、Radix Cache、调度重叠、NPU 图执行和 DeepEP。
+
+## 1. 最终结论
+
+这次部署最终确认了以下事实：
+
+1. 模型主体权重可以在 4 张 Ascend 910B3 上通过 SGLang 正确加载和生成。
+2. 模型使用 ModelSlim W4A8 量化，SGLang 启动参数必须指定 `--quantization modelslim`。
+3. 最初出现乱码并不是提示词问题，而应优先排查 DeepSeek-V4 的 ModelSlim 权重名称映射、模型分片完整性和新旧分片混用。
+4. 模型能够正确输出 `Paris`，说明 tokenizer、主模型权重和基本推理链路已经正常。
+5. `The capital of France is` 后继续生成其他国家首都，是自回归模型继续补全文本的正常行为，不是模型错误。
+6. 当前检查点内置的是 **DSpark 格式的草稿模块**，不是 EAGLE 格式的 MTP 检查点。
+7. 把 DSpark 检查点强行按 EAGLE 加载，会出现 EAGLE 参数未初始化，最终表现为投机接受长度接近 1、接受率接近 0。
+8. 当前 SGLang 的 DSpark 实现明确限制为 CUDA，不能在 Ascend NPU 上直接启用。
+9. 因此在当前 SGLang + Ascend 环境中，正确选择是关闭投机解码，保证目标模型稳定运行。
+10. 当前源码具备 DeepSeek-V4 的 HiCache 支持。NPU 后端会自动使用 `kernel_ascend` I/O；DeepSeek-V4 应使用 `--hicache-ratio`，不能使用 `--hicache-size`。
+
+## 2. 实际环境
+
+### 2.1 硬件
+
+- NPU：4 张 Ascend 910B3
+- 使用的物理设备编号：`2,3,6,7`
+- 并行策略：TP=4、EP=4、DP=1
+- 服务端口：`30000`
+
+### 2.2 软件
+
+实际检查到的核心版本：
+
+```text
+SGLang:        0.5.17.dev415+g5c6635d8f
+Git commit:    5c6635d8f3f4330fecf416db700e342a14d66fc5
+Python:        3.11
+PyTorch:       2.10.0
+torch-npu:     2.10.0
+sgl-kernel-npu: 2026.6.1
+DeepEP:        deepep2 构建版本
+```
+
+服务器代码目录：
+
+```text
+/home/w00580100/z50065249/sglang
+```
+
+服务器模型目录：
+
+```text
+/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+```
+
+Python 环境：
+
+```text
+zpc_py311
+```
+
+## 3. 模型配置与检查点特征
+
+本地 `config.json` 中确认了以下关键字段：
+
+```json
+{
+  "architectures": ["DeepseekV4ForCausalLM"],
+  "model_type": "deepseek_v4",
+  "hidden_size": 4096,
+  "num_hidden_layers": 43,
+  "n_routed_experts": 256,
+  "num_experts_per_tok": 6,
+  "num_nextn_predict_layers": 1,
+  "dspark_block_size": 5,
+  "dspark_noise_token_id": 128799,
+  "dspark_target_layer_ids": [40, 41, 42],
+  "dspark_markov_rank": 256
+}
+```
+
+这些字段说明：
+
+- 主模型架构是 `DeepseekV4ForCausalLM`。
+- 模型包含 MoE，具有 256 个路由专家，每个 token 选择 6 个专家。
+- 检查点带有 NextN/MTP 相关权重，但其草稿结构是 DSpark。
+- `dspark_*` 字段不是普通 EAGLE 检查点的配置字段。
+- 量化只改变权重的数据表示和算子路径，不会自动把 DSpark 结构转换成 EAGLE 结构。
+
+## 4. 模型文件完整性验证
+
+### 4.1 最终确认结果
+
+服务器模型目录中量化权重共有 38 个分片：
+
+```text
+files = 38
+bytes = 169741369240
+```
+
+目录中没有残留的 `*-of-00037.safetensors` 文件。
+
+核心文件大小：
+
+```text
+1897       config.json
+6367146    tokenizer.json
+801        tokenizer_config.json
+170        generation_config.json
+8906574    quant_model_description.json
+13781297   quant_model_weights.safetensors.index.json
+67108960   optional/quarot.safetensors
+```
+
+核心文件 SHA256：
+
+```text
+6c6cdc4a47e00e41137081429b95bd5c1cf91ba62e87309d1398431de7f4a8e1  config.json
+8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf  tokenizer.json
+6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547  tokenizer_config.json
+5fccff80f55a4d455bbe516bdd552edf3e9623df95e99fbf2a3c3389fdf91af0  generation_config.json
+2fca8892674e865c09a873ee8299e2a60671c838b6723cd87f77272053648316  quant_model_description.json
+3ddba287fb9a41e41275d7d182b35cf9ddbb69c08a48e126ef0707ef254eafbb  quant_model_weights.safetensors.index.json
+09621023c666f2fd709e59bda0e7cc69ccd6e62eefabfb7e9e3bf0427bf9fa58  optional/quarot.safetensors
+```
+
+### 4.2 推荐的服务器检查命令
+
+```bash
+MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+
+find "$MODEL" -maxdepth 1 -type f \
+  -name 'quant_model_weights-*-of-00038.safetensors' \
+  -printf '%s\n' |
+awk '{sum += $1} END {print "files =", NR, "bytes =", sum}'
+
+find "$MODEL" -maxdepth 1 -type f \
+  -name '*-of-00037.safetensors' -print
+
+stat -c '%s %n' \
+  "$MODEL/config.json" \
+  "$MODEL/tokenizer.json" \
+  "$MODEL/tokenizer_config.json" \
+  "$MODEL/generation_config.json" \
+  "$MODEL/quant_model_description.json" \
+  "$MODEL/quant_model_weights.safetensors.index.json" \
+  "$MODEL/optional/quarot.safetensors"
+
+sha256sum \
+  "$MODEL/config.json" \
+  "$MODEL/tokenizer.json" \
+  "$MODEL/tokenizer_config.json" \
+  "$MODEL/generation_config.json" \
+  "$MODEL/quant_model_description.json" \
+  "$MODEL/quant_model_weights.safetensors.index.json" \
+  "$MODEL/optional/quarot.safetensors"
+```
+
+### 4.3 经验
+
+- 不能只看分片数量，还要看总字节数、索引文件和 SHA256。
+- 新版 38 分片和旧版 37 分片不能混在同一目录中。
+- 索引文件与权重分片必须来自同一版本。
+- tokenizer 和模型权重不匹配，也可能表现为乱码或异常 token。
+- 模型能够完成加载并不代表每个权重都正确映射，应同时检查启动日志中的 missing/uninitialized weights。
+
+## 5. DeepEP 的构建与安装
+
+### 5.1 构建
+
+实际使用：
+
+```bash
+cd /home/w00580100/z50065249/sgl-kernel-npu
+bash build.sh -a deepep2
+```
+
+构建输出曾显示：
+
+```text
+Build target: deepep2
+DeepEP variant: deepep2
+DeepEP SOC_VERSION: Ascend910B1
+CMake SOC_VERSION: Ascend910_9382
+```
+
+这里不能只根据脚本打印的通用 `Ascend910B1` 标签判断是否构建错误。对这台 910B3 环境，更关键的是实际 CMake SoC 目标、CANN 版本、生成的 wheel、动态库能否导入，以及启动时 DeepEP 算子是否正常执行。本次最终构建使用的是 `Ascend910_9382` CMake 目标。
+
+### 5.2 wheel 不存在问题
+
+曾执行：
+
+```bash
+pip install output/deep_ep*.whl
+```
+
+但得到：
+
+```text
+Requirement 'output/deep_ep*.whl' looks like a filename, but the file does not exist
+ERROR: Invalid wheel filename
+```
+
+原因不是 `pip` 不支持 wheel，而是 shell 没有在 `output/` 目录找到匹配文件，通配符原样传给了 `pip`。
+
+正确做法是先定位产物：
+
+```bash
+cd /home/w00580100/z50065249/sgl-kernel-npu
+find . -type f -name 'deep_ep*.whl' -print
+```
+
+然后使用实际路径安装：
+
+```bash
+pip install /实际路径/deep_ep_xxx.whl
+```
+
+### 5.3 动态库软链接
+
+执行 `ln -s` 时出现：
+
+```text
+ln: failed to create symbolic link './deep_ep_cpp.cpython-311-aarch64-linux-gnu.so': File exists
+```
+
+这表示目标链接或文件已经存在，不等于 DeepEP 一定没有安装。应先检查现有文件指向：
+
+```bash
+DEEP_EP_LOCATION=$(pip show deep-ep | awk '/^Location:/ {print $2}')
+ls -l "$DEEP_EP_LOCATION"/deep_ep_cpp*.so
+ls -l "$DEEP_EP_LOCATION"/deep_ep/deep_ep_cpp*.so
+```
+
+必要时再修复链接。不要反复创建同名链接而忽略现有文件。
+
+验证导入时，Python 属性应写成 `__path__`，而不是 Markdown 中被误写的 `**path**`：
+
+```bash
+python -c 'import deep_ep; print(deep_ep.__path__)'
+python -c 'import deep_ep; print(deep_ep.__file__)'
+pip show deep-ep
+```
+
+## 6. 初期乱码问题
+
+最初测试：
+
+```bash
+curl http://127.0.0.1:30000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "What is the capital of France?",
+    "sampling_params": {"temperature": 0, "max_new_tokens": 128}
+  }'
+```
+
+返回了无意义字符、中文模板碎片和重复数字。这种情况不是正常的语言模型随机性。
+
+重点排查方向：
+
+1. 38 个权重分片是否完整。
+2. 是否混入旧版 37 分片。
+3. tokenizer 是否与权重来自同一模型版本。
+4. `quant_model_description.json` 是否与量化权重匹配。
+5. SGLang ModelSlim 加载器是否正确识别 DeepSeek-V4 并进行权重名称重映射。
+6. 启动日志是否出现大量主模型权重未初始化。
+
+当前 SGLang 的 ModelSlim 代码包含 DeepSeek-V4 识别与重映射逻辑：
+
+```python
+is_dsv4 = any(k.startswith("hc_head_") for k in keys)
+if is_dsv4:
+    from sglang.srt.models.deepseek_v4 import DeepseekV4ForCausalLM
+    remap = DeepseekV4ForCausalLM.remap_weight_name_to_dpsk_hf_format
+```
+
+对应源码位置：
+
+```text
+python/sglang/srt/layers/quantization/modelslim/modelslim.py
+```
+
+后续模型能够稳定生成正确的 `Paris`，说明主模型加载链路已经修复。
+
+## 7. “为什么继续生成其他国家首都”
+
+正常测试结果：
+
+```text
+Prompt: The capital of France is
+Output: Paris. The capital of Spain is Madrid. The capital of Italy is Rome...
+```
+
+这是正常的自回归续写行为：
+
+- 输入是一个未结束的陈述句。
+- 模型预测 `Paris` 后，仍然没有遇到 EOS 或指定的 stop 字符串。
+- `max_new_tokens=32` 要求最多继续生成 32 个 token。
+- 模型把句子扩展成“各国首都列表”，直到长度上限结束。
+
+这不代表模型把法国首都回答错了。若只需要简短回答，可以：
+
+- 使用 OpenAI Chat API，并给出明确指令，例如“只回答城市名”。
+- 把 `max_new_tokens` 降低到 4～8。
+- 根据实际 tokenizer/chat template 设置 stop token 或 stop string。
+
+示例：
+
+```bash
+curl -s http://127.0.0.1:30000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "DeepSeek-V4-Flash-0731-w4a8",
+    "messages": [
+      {"role": "user", "content": "What is the capital of France? Only answer the city name."}
+    ],
+    "temperature": 0,
+    "max_tokens": 8
+  }'
+```
+
+## 8. 投机解码失败的完整分析
+
+### 8.1 表面现象
+
+`/server_info` 显示：
+
+```text
+speculative_algorithm: EAGLE
+speculative_num_steps: 2
+speculative_num_draft_tokens: 3
+avg_spec_accept_length: 1.001219512195122
+```
+
+参数看起来已经开启，但平均接受长度几乎等于 1。按照 SGLang 的统计语义，1 通常代表只保留目标模型自身生成的基本 token，草稿 token 基本没有被接受。无论采用哪种具体接受率换算方式，这个数值都说明投机解码实际上没有带来有效加速。
+
+### 8.2 启动日志中的关键证据
+
+按 EAGLE 加载时出现：
+
+```text
+model.decoder.embed.weight not found in params_dict.
+model.decoder.main_norm.weight not found in params_dict.
+model.decoder.main_proj.weight not found in params_dict.
+model.decoder.confidence_head.proj.weight not found in params_dict.
+model.decoder.markov_head.markov_w1.weight not found in params_dict.
+model.decoder.markov_head.markov_w2.weight not found in params_dict.
+
+Some weights are not initialized from checkpoints:
+model.enorm.weight
+model.e_proj.weight
+model.h_proj.weight
+model.hnorm.weight
+```
+
+同时，模型文件中实际存在的是：
+
+```text
+mtp.0.*
+mtp.1.*
+mtp.2.*
+main_norm
+main_proj
+confidence_head
+markov_head
+```
+
+而 EAGLE 的 `DeepseekV4ForCausalLMNextN` 路径期待：
+
+```text
+enorm
+hnorm
+e_proj
+h_proj
+```
+
+因此真正的问题是：**使用了错误的草稿模型架构加载器。**
+
+### 8.3 为什么 W4A8 不是根因
+
+这不是因为 W4A8 量化把 EAGLE 的准确率降低到了 0，也不是简单调大/调小 `speculative_num_steps` 能解决的问题。
+
+原因在于：
+
+- DSpark 和 EAGLE 是两套不同的草稿模型结构。
+- 它们的参数名称、前向计算、草稿生成方式和验证逻辑不同。
+- 当前检查点提供的是 DSpark 权重。
+- 使用 EAGLE 加载时，EAGLE 专属层没有对应权重，只能保持未初始化状态。
+- 未初始化的草稿网络自然无法预测与目标模型一致的 token。
+
+量化会影响权重精度和算子形式，但不会把 `main_proj/markov_head` 自动转换成 `e_proj/h_proj`。
+
+### 8.4 为什么不能直接改成 DSpark
+
+当前 SGLang 源码中存在明确限制：
+
+```python
+if not server_args.device.startswith("cuda"):
+    raise ValueError("DSpark speculative decoding only supports CUDA device.")
+```
+
+源码位置：
+
+```text
+python/sglang/srt/arg_groups/speculative_hook.py
+```
+
+也就是说，当前 SGLang 的 DSpark 路径只支持 CUDA，不支持 Ascend NPU。删除这个检查也不能自动获得 NPU 支持，因为后续仍涉及 CUDA 专用实现和未移植的 DSpark 算子。
+
+### 8.5 最终决策
+
+在当前软件栈中：
+
+- 不再使用 `--speculative-algorithm EAGLE`。
+- 不再传入任何 `--speculative-*` 参数。
+- 清除 `SGLANG_ENABLE_SPEC_V2` 和 `FORCE_DRAFT_MODEL_NON_QUANT` 等历史环境变量。
+- 直接运行目标模型，将稳定性、输出正确性和实际吞吐作为优先目标。
+
+如未来必须使用 DSpark，可评估已经实现 Ascend DSpark 的推理框架或等待 SGLang 完成 NPU 移植；不能用一条启动参数解决架构和内核缺失问题。
+
+## 9. HiCache 是否可以启用
+
+### 9.1 源码证据
+
+当前 NPU 初始化逻辑在启用 HiCache 后会设置：
+
+```python
+if args.enable_hierarchical_cache:
+    args.hicache_io_backend = "kernel_ascend"
+    if args.use_mla_backend():
+        args.hicache_mem_layout = "page_first_kv_split"
+    else:
+        args.hicache_mem_layout = "page_first_direct"
+```
+
+源码位置：
+
+```text
+python/sglang/srt/hardware_backend/npu/utils.py
+```
+
+DeepSeek-V4 的 HiCache 构建逻辑还明确规定：
+
+```text
+DeepSeek V4 HiCache currently does not support --hicache-size;
+use --hicache-ratio instead.
+```
+
+源码位置：
+
+```text
+python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py
+```
+
+### 9.2 本次使用方式
+
+本次只启用：
+
+- L1：NPU 设备内存中的 KV Cache。
+- L2：服务器主机内存中的 KV Cache。
+
+暂不配置 L3 文件系统、Mooncake、3FS 或其他分布式存储后端，从而减少依赖和排障范围。
+
+核心参数：
+
+```bash
+--enable-hierarchical-cache
+--hicache-ratio 2.0
+--hicache-write-policy write_through
+```
+
+不要手工指定以下参数，因为 NPU 后端会根据模型自动选择：
+
+```text
+--hicache-io-backend
+--hicache-mem-layout
+```
+
+不要为 DeepSeek-V4 设置：
+
+```text
+--hicache-size
+```
+
+### 9.3 HiCache 的作用边界
+
+HiCache 主要优化以下工作负载：
+
+- 多个请求共享同一个长 system prompt。
+- 多轮对话反复复用历史前缀。
+- RAG 请求具有大量相同模板或相同文档前缀。
+- 设备侧 KV Cache 容量有限，但服务器主机内存较充足。
+
+HiCache不会：
+
+- 让完全没有重复前缀的第一个请求天然变快。
+- 自动提高单请求逐 token 解码速度。
+- 自动把 `--context-length 32768` 扩大到更长上下文。
+- 替代模型显存或允许权重本身放不进 NPU。
+
+`--hicache-ratio 2.0` 表示主机侧 KV 池按设备侧 KV 池约 2 倍的规模分配，而且通常按 rank 分配。4 rank 的总主机内存开销可能较大。若主机内存不足，可以先降为：
+
+```bash
+--hicache-ratio 1.25
+```
+
+比值需要大于 1。实际可用值应结合启动日志和服务器 RAM 使用量调整。
+
+## 10. 最终前台启动命令
+
+以下命令满足：
+
+- 不使用 Docker。
+- 不使用 `nohup`。
+- 直接在当前终端前台运行。
+- 使用 4 张 910B3：2、3、6、7。
+- ModelSlim W4A8。
+- TP=4、EP=4、DeepEP。
+- 启用 Radix Cache、HiCache、Overlap、NPU 图执行和指标接口。
+- 不启用任何投机解码。
+
+```bash
+conda activate zpc_py311
+
+cd /home/w00580100/z50065249/sglang
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+
+MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+
+export ASCEND_RT_VISIBLE_DEVICES=2,3,6,7
+
+export TASK_QUEUE_ENABLE=1
+export STREAMS_PER_DEVICE=32
+export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+export INF_NAN_MODE_FORCE_DISABLE=1
+export OMP_PROC_BIND=false
+export OMP_NUM_THREADS=10
+export HCCL_OP_EXPANSION_MODE=AIV
+export HCCL_BUFFSIZE=2048
+
+export DEEPEP_HCCL_BUFFSIZE=1000
+export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=24
+export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
+export DEEPEP_NORMAL_LONG_SEQ_ROUND=16
+export DEEPEP_NORMAL_LONG_SEQ_PER_ROUND_TOKENS=2048
+export DEEPEP_NORMAL_COMBINE_ENABLE_LONG_SEQ=1
+
+unset SGLANG_ENABLE_SPEC_V2
+unset FORCE_DRAFT_MODEL_NON_QUANT
+unset SGLANG_ENABLE_OVERLAP_PLAN_STREAM
+unset ASCEND_LAUNCH_BLOCKING
+
+python -m sglang.launch_server \
+  --model-path "$MODEL" \
+  --served-model-name DeepSeek-V4-Flash-0731-w4a8 \
+  --trust-remote-code \
+  --host 0.0.0.0 \
+  --port 30000 \
+  --device npu \
+  --dtype bfloat16 \
+  --quantization modelslim \
+  --attention-backend dsv4 \
+  --kv-cache-dtype bfloat16 \
+  --tp-size 4 \
+  --ep-size 4 \
+  --moe-a2a-backend deepep \
+  --deepep-mode auto \
+  --deepep-dispatcher-output-dtype int8 \
+  --page-size 128 \
+  --context-length 32768 \
+  --max-total-tokens 32768 \
+  --max-prefill-tokens 8192 \
+  --chunked-prefill-size 8192 \
+  --prefill-max-requests 1 \
+  --max-running-requests 4 \
+  --mem-fraction-static 0.70 \
+  --cuda-graph-bs 1 2 4 \
+  --enable-hierarchical-cache \
+  --hicache-ratio 2.0 \
+  --hicache-write-policy write_through \
+  --enable-metrics \
+  --watchdog-timeout 9000
+```
+
+使用 `Ctrl+C` 正常结束前台服务。
+
+### 10.1 为什么命令中没有“启用 Radix Cache”和“启用 Overlap”的参数
+
+在当前 SGLang 中：
+
+- Radix Cache 默认启用；只有传入 `--disable-radix-cache` 才会关闭。
+- Overlap scheduler 默认启用；只有传入 `--disable-overlap-schedule` 才会关闭。
+- HiCache 与 `--disable-radix-cache` 互斥，因此不能同时出现。
+
+### 10.2 图执行参数说明
+
+命令继续使用：
+
+```bash
+--cuda-graph-bs 1 2 4
+```
+
+虽然参数名保留了 `cuda`，在当前多后端 SGLang 中它也是图执行配置的兼容入口。对 NPU 而言应理解为 NPU 图捕获/回放路径，而不是服务器上真的使用 NVIDIA CUDA。
+
+较小的捕获 batch size 可降低启动捕获开销和额外内存，同时覆盖当前 `max-running-requests=4` 的常见解码 batch。
+
+## 11. 启动后检查
+
+### 11.1 健康检查
+
+```bash
+curl -fsS http://127.0.0.1:30000/health
+```
+
+`/health` 只检查服务基本状态，不执行完整生成。
+
+执行一次生成型健康检查：
+
+```bash
+curl -fsS http://127.0.0.1:30000/health_generate
+```
+
+### 11.2 查看模型信息
+
+```bash
+curl -fsS http://127.0.0.1:30000/get_model_info | python -m json.tool
+```
+
+部分版本也提供：
+
+```bash
+curl -fsS http://127.0.0.1:30000/model_info | python -m json.tool
+```
+
+### 11.3 查看服务参数
+
+```bash
+curl -fsS http://127.0.0.1:30000/server_info | \
+python -m json.tool | \
+grep -i -E 'hierarchical|hicache|radix|speculative|overlap|deepep|cuda_graph'
+```
+
+应重点确认：
+
+- `enable_hierarchical_cache` 为 `true`。
+- `hicache_ratio` 为期望值。
+- `hicache_io_backend` 最终解析为 `kernel_ascend`。
+- `disable_radix_cache` 为 `false`。
+- `disable_overlap_schedule` 为 `false`。
+- `speculative_algorithm` 为 `null` 或不存在。
+- TP、EP 和 DeepEP 参数与启动命令一致。
+
+### 11.4 查看 HiCache 指标
+
+```bash
+curl -fsS http://127.0.0.1:30000/metrics | \
+grep -E 'sglang:hicache_host_(used|total)_tokens'
+```
+
+如果没有输出，先确认启动命令是否包含 `--enable-metrics`，再查看启动日志是否实际创建 HiCache host pool。
+
+### 11.5 基础生成测试
+
+```bash
+curl -s http://127.0.0.1:30000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "The capital of France is",
+    "sampling_params": {
+      "temperature": 0,
+      "max_new_tokens": 8
+    }
+  }'
+```
+
+预期输出应以 `Paris` 开头。
+
+## 12. JSON 管道错误的教训
+
+曾执行类似命令：
+
+```bash
+curl -s http://127.0.0.1:30000/server_info |
+python - <<'PY'
+import json, sys
+data = json.load(sys.stdin)
+PY
+```
+
+结果出现：
+
+```text
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1
+```
+
+原因是 `python - <<'PY'` 使用 heredoc 把 Python 脚本本身送入标准输入，覆盖了前面管道传来的 JSON，所以 `json.load(sys.stdin)` 读不到接口数据。
+
+正确方式一：使用 `python -c`，把标准输入保留给 JSON：
+
+```bash
+curl -fsS http://127.0.0.1:30000/server_info |
+python -c '
+import json, sys
+data = json.load(sys.stdin)
+args = data.get("server_args", data)
+print("speculative_algorithm:", args.get("speculative_algorithm"))
+print("enable_hierarchical_cache:", args.get("enable_hierarchical_cache"))
+print("hicache_ratio:", args.get("hicache_ratio"))
+'
+```
+
+正确方式二：先保存 JSON，再让 heredoc Python 读取文件：
+
+```bash
+curl -fsS http://127.0.0.1:30000/server_info -o /tmp/sglang_server_info.json
+
+python - /tmp/sglang_server_info.json <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as file:
+    data = json.load(file)
+
+print(json.dumps(data.get("server_args", data), indent=2, ensure_ascii=False))
+PY
+```
+
+## 13. 性能测试与指标理解
+
+### 13.1 benchmark 命令不是启动模型
+
+```bash
+python -m sglang.benchmark.serving
+```
+
+这是压测客户端，不是模型服务端。必须先通过 `python -m sglang.launch_server ...` 启动模型，再在另一个终端执行 benchmark。
+
+### 13.2 基础压测示例
+
+先查看当前版本的实际参数：
+
+```bash
+python -m sglang.benchmark.serving --help
+```
+
+随机数据集示例：
+
+```bash
+python -m sglang.benchmark.serving \
+  --backend sglang \
+  --base-url http://127.0.0.1:30000 \
+  --dataset-name random \
+  --num-prompts 100 \
+  --random-input-len 1024 \
+  --random-output-len 256 \
+  --request-rate inf
+```
+
+不同 SGLang 版本的参数名称可能有变化；如果 `--random-input-len` 不被识别，以本机 `--help` 为准。
+
+### 13.3 需要分别测量的指标
+
+- **TTFT**：从请求发出到第一个输出 token 返回的时间，主要受排队、prefix cache 命中和 prefill 影响。
+- **TPOT/ITL**：首 token 后每个 token 的平均生成间隔，更接近单请求解码速度。
+- **Output throughput**：所有请求输出 token 数除以总时间。
+- **Total token throughput**：输入与输出 token 总量除以总时间。
+- **Request throughput**：每秒完成的请求数。
+- **并发吞吐**：随并发数上升时，系统总吞吐和单请求延迟的变化。
+- **最大上下文**：既要验证单请求能否接受目标长度，也要检查其 TTFT、内存和稳定性。
+- **HiCache 命中收益**：同一长前缀第一次请求与第二次请求的 TTFT/prefill 延迟差异。
+
+### 13.4 如何理解约 18 token/s
+
+单独看到 `gen throughput ≈ 18 token/s` 不能直接判定快或慢，至少要同时知道：
+
+- 是单请求还是多请求总吞吐。
+- 输入长度和输出长度。
+- 是否包含 warmup。
+- 是否命中 Radix Cache/HiCache。
+- TP、EP、batch size 和并发数。
+- 指标是某个 rank、某个 batch，还是全服务聚合值。
+
+对于超大 MoE 模型、4 张 910B3、单请求 decode，18 token/s 可以作为当前基线；优化是否有效应通过完全相同的请求集做 A/B 对比，而不是与不同模型、不同卡数或不同并发条件下的公开数字直接比较。
+
+### 13.5 HiCache A/B 测试
+
+设计一个包含长公共前缀的请求，例如 8K token system prompt：
+
+1. 清空缓存或重启服务。
+2. 发送第一次请求，记录 TTFT、prompt token 数和 prefill 时间。
+3. 用完全相同的长前缀发送第二个问题。
+4. 比较第二次请求的 cached tokens、TTFT 和 prefill 延迟。
+5. 再关闭 HiCache、保持其他参数不变重复测试。
+
+只测试无重复随机输入，无法证明 HiCache 是否有效。
+
+## 14. `aclnnCamMoeDispatchNormal` 错误
+
+曾在压测过程中出现：
+
+```text
+RuntimeError: call aclnnCamMoeDispatchNormal failed
+CamMoeDispatchNormal do tiling failed
+```
+
+这类错误发生在服务端 DeepEP/MoE dispatch 的 normal 路径，不是 benchmark 客户端本身启动模型导致的，也不能仅凭该错误判断模型权重损坏。
+
+优先排查：
+
+1. CANN、torch-npu、sgl-kernel-npu 和 DeepEP wheel 是否为匹配组合。
+2. DeepEP 是否针对正确 SoC 构建。
+3. 是否只在较长 prefill、较高并发或特定 token 数下触发。
+4. `--chunked-prefill-size` 和 `--max-prefill-tokens` 是否过大。
+5. DeepEP normal 模式的长序列环境变量是否生效。
+6. 是否有残留服务占用部分 NPU 内存或 HCCL 通信资源。
+
+建议采用逐步扩大压力的方式：
+
+- 先验证 128～256 token 输入。
+- 再验证 1K、4K、8K。
+- 并发从 1、2、4 逐步增加。
+- 每次只改变一个参数。
+
+如果错误只发生在 `deepep_mode=auto` 的 prefill normal 路径，可临时使用：
+
+```bash
+--deepep-mode low_latency
+```
+
+进行定位。如果 low-latency 模式稳定，说明故障范围更可能集中在 normal dispatch/tiling 路径。但该切换可能改变 prefill 和整体吞吐，适合作为诊断变量，不应在没有 A/B 测试的情况下直接认定为最终性能最优配置。
+
+## 15. 参数与功能状态总览
+
+| 功能 | 最终状态 | 说明 |
+|---|---:|---|
+| ModelSlim W4A8 | 开启 | `--quantization modelslim` |
+| TP | 开启 | `--tp-size 4` |
+| EP | 开启 | `--ep-size 4` |
+| DP | 未开启 | 当前为单实例 TP4/EP4 |
+| DeepEP | 开启 | `--moe-a2a-backend deepep` |
+| DeepEP int8 dispatcher | 开启 | `--deepep-dispatcher-output-dtype int8` |
+| DSV4 attention backend | 开启 | `--attention-backend dsv4` |
+| BF16 KV cache | 开启 | `--kv-cache-dtype bfloat16` |
+| Chunked prefill | 开启 | `--chunked-prefill-size 8192` |
+| Radix Cache | 开启 | 默认开启，未传 `--disable-radix-cache` |
+| HiCache L1+L2 | 开启 | `--enable-hierarchical-cache` |
+| HiCache L3 | 未开启 | 没有配置 storage backend |
+| Overlap scheduler | 开启 | 默认开启，未传 `--disable-overlap-schedule` |
+| NPU 图执行 | 开启 | 捕获 batch size 1、2、4 |
+| Prometheus metrics | 开启 | `--enable-metrics` |
+| EAGLE 投机解码 | 关闭 | 检查点架构不匹配 |
+| DSpark 投机解码 | 关闭 | 当前 SGLang 只支持 CUDA DSpark |
+| Docker | 未使用 | 裸机 Conda/CANN 环境 |
+| nohup | 未使用 | 当前终端前台启动 |
+
+## 16. 最重要的经验和教训
+
+### 16.1 “参数显示已开启”不等于功能有效
+
+`/server_info` 显示 EAGLE 并不能证明投机解码真正生效。还必须检查：
+
+- 草稿模型结构是否匹配。
+- 草稿权重是否完整加载。
+- 是否有未初始化参数。
+- `avg_spec_accept_length` 和实际吞吐是否改善。
+
+### 16.2 先区分架构问题、量化问题和硬件后端问题
+
+本次投机解码失败的核心是 DSpark/EAGLE 架构不匹配，而不是 W4A8 数值误差。若一开始就不断调整温度、draft token 数或量化参数，会偏离真正原因。
+
+### 16.3 正确输出优先于功能数量
+
+投机解码、图执行、Overlap、Radix Cache、HiCache 都属于优化层。正确顺序应是：
+
+1. 验证模型文件完整。
+2. 验证主模型输出正确。
+3. 验证单请求稳定。
+4. 逐项启用并验证优化。
+5. 最后进行并发和长上下文压测。
+
+### 16.4 一次只改变一个优化项
+
+同时修改 DP、TP、EP、DeepEP、图执行、投机解码和 HiCache，一旦失败很难定位。保留一条已知可用基线命令，然后逐项做 A/B 测试，是最高效的排障方式。
+
+### 16.5 看启动日志中的权重名称比只看“Loaded”更重要
+
+服务能够启动，不代表草稿模型或某个子模块加载正确。大量 `not found`、`not initialized` 是强烈的结构不匹配信号。
+
+### 16.6 压测工具和服务端必须分开理解
+
+`python -m sglang.launch_server` 是服务端；`python -m sglang.benchmark.serving` 是客户端。benchmark 引起的服务端算子异常，仍需要从服务端日志和 NPU 算子栈定位。
+
+### 16.7 HiCache 是前缀复用优化，不是通用解码加速器
+
+评估 HiCache 必须使用重复长前缀。随机且互不相同的请求很难从 HiCache 获益，甚至可能因为 L1/L2 数据搬运产生额外开销。
+
+## 17. 推荐的后续优化顺序
+
+保持最终命令为稳定基线，按以下顺序开展：
+
+1. 完成 1、2、4 并发下的短输入稳定性测试。
+2. 分别测试 1K、4K、8K、16K、32K 输入。
+3. 测试 `hicache-ratio=1.25` 与 `2.0` 的主机内存和 TTFT 差异。
+4. 使用重复长前缀测试 HiCache 命中收益。
+5. 对 `deepep-mode=auto` 和 `low_latency` 做 A/B 测试。
+6. 测试不同 `max-running-requests`，观察吞吐与 P99 延迟。
+7. 若启动内存充足，再逐步扩展图捕获 batch size。
+8. 每轮测试记录完整命令、环境变量、版本、输入/输出长度、并发、TTFT、TPOT、吞吐和错误日志。
+
+在 SGLang 官方完成 Ascend DSpark 支持之前，不再把时间投入到当前检查点的 EAGLE 参数调优，因为根因不是可通过参数消除的接受率问题。
+
+## 18. 快速检查清单
+
+启动前：
+
+- [ ] `npu-smi info` 能看到 2、3、6、7 四张卡。
+- [ ] 没有旧 SGLang 服务占用 30000 端口。
+- [ ] 38 个权重分片完整，总字节数正确。
+- [ ] 没有 37 分片残留。
+- [ ] `deep_ep` 可以导入。
+- [ ] CANN 环境已经 source。
+- [ ] 没有残留的 speculative 环境变量。
+- [ ] 主机内存足以容纳 HiCache L2 池。
+
+启动后：
+
+- [ ] 四个 rank 全部完成模型加载和图捕获。
+- [ ] 没有主模型权重 missing/uninitialized。
+- [ ] `/health` 返回成功。
+- [ ] `Paris` 基础测试正确。
+- [ ] `/server_info` 中投机解码关闭。
+- [ ] HiCache 已启用并解析为 `kernel_ascend`。
+- [ ] Radix Cache 和 Overlap 没有被禁用。
+- [ ] `/metrics` 能看到 HiCache host token 指标。
+- [ ] 短请求稳定后再开始长上下文和并发压测。
+
+---
+
+本文的最终部署策略可以概括为：**确保 38 分片 W4A8 主模型正确加载，以 TP4+EP4+DeepEP 运行；保留 Radix Cache、Overlap 和 NPU 图执行；使用 NPU 原生 HiCache L1+L2；关闭与检查点架构不匹配且当前 NPU 后端不支持的投机解码。**
