@@ -1,35 +1,17 @@
-MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+cd /home/w00580100/z50065249/sglang
 
-echo "=== 当前 38 分片数量与总字节数 ==="
-find "$MODEL" -maxdepth 1 -type f \
-  -name 'quant_model_weights-*-of-00038.safetensors' \
-  -printf '%s\n' |
-awk '{sum += $1} END {print "files =", NR, "bytes =", sum}'
+rg -n \
+  'is_dsv4 = any|remap_weight_name_to_dpsk_hf_format' \
+  python/sglang/srt/layers/quantization/modelslim/modelslim.py
 
-echo "期望：files = 38 bytes = 169741369240"
+git rev-parse HEAD 2>/dev/null || true
 
-echo "=== 检查是否混入旧版 37 分片 ==="
-find "$MODEL" -maxdepth 1 -type f \
-  -name '*-of-00037.safetensors' -print
+python - <<'PY'
+import importlib.metadata as m
 
-echo "期望：没有任何输出"
-
-echo "=== 核心文件大小 ==="
-stat -c '%s %n' \
-  "$MODEL/config.json" \
-  "$MODEL/tokenizer.json" \
-  "$MODEL/tokenizer_config.json" \
-  "$MODEL/generation_config.json" \
-  "$MODEL/quant_model_description.json" \
-  "$MODEL/quant_model_weights.safetensors.index.json" \
-  "$MODEL/optional/quarot.safetensors"
-
-echo "=== 核心文件 SHA256 ==="
-sha256sum \
-  "$MODEL/config.json" \
-  "$MODEL/tokenizer.json" \
-  "$MODEL/tokenizer_config.json" \
-  "$MODEL/generation_config.json" \
-  "$MODEL/quant_model_description.json" \
-  "$MODEL/quant_model_weights.safetensors.index.json" \
-  "$MODEL/optional/quarot.safetensors"
+for name in ("sglang", "torch", "torch-npu", "sgl-kernel-npu"):
+    try:
+        print(name, m.version(name))
+    except Exception as e:
+        print(name, "not found:", e)
+PY
