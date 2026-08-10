@@ -1,8 +1,9 @@
-python - <<'PY'
-import deep_ep
-import deep_ep_cpp
-
-print("deep_ep:", list(deep_ep.__path__))
-print("deep_ep_cpp:", deep_ep_cpp.__file__)
-print("DeepEP import: OK")
-PY
+curl -s http://127.0.0.1:30000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "text": "The capital of France is",
+    "sampling_params": {
+      "temperature": 0,
+      "max_new_tokens": 32
+    }
+  }'
