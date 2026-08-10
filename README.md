@@ -1,16 +1,15 @@
-find output -maxdepth 1 -type f -name 'deep_ep*.whl' -ls
-python -m pip uninstall -y deep-ep
 
-python -m pip install \
-  --no-cache-dir \
-  --force-reinstall \
-  output/deep_ep*.whl
+(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sgl-kernel-npu$ pip install output/deep_ep*.whl
 
-DEEP_EP_SITE=$(
-  python -m pip show deep-ep |
-  awk '/^Location:/ {print $2}'
-)
+# Link to the deep_ep_cpp.*.so file
+cd "$(pip show deep-ep | grep -E '^Location:' | awk '{print $2}')" && ln -s deep_ep/deep_ep_cpp*.so && cd -
 
-cd "$DEEP_EP_SITE"
-
-ln -sf deep_ep/deep_ep_cpp*.so .
+# (Optional) Confirm whether the import can be successful
+python -c "import deep_ep; print(deep_ep.__path__)"
+WARNING: Requirement 'output/deep_ep*.whl' looks like a filename, but the file does not exist
+ERROR: Invalid wheel filename (wrong number of parts): 'deep_ep*'
+WARNING: Package(s) not found: deep-ep
+ln: failed to create symbolic link './deep_ep_cpp*.so': File exists
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'deep_ep'
