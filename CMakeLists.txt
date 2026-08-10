@@ -1,228 +1,43 @@
-(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$ curl -s http://127.0.0.1:30000/server_info \
-  | python -m json.tool \
-  | grep -i -E 'speculative|eagle|draft|accept'
-    "speculative_algorithm": "EAGLE",
-    "speculative_draft_model_path": "/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8",
-    "speculative_draft_model_revision": null,
-    "speculative_draft_load_format": null,
-    "speculative_num_steps": 2,
-    "speculative_eagle_topk": 1,
-    "speculative_num_draft_tokens": 3,
-    "speculative_dflash_block_size": null,
-    "speculative_dspark_block_size": null,
-    "speculative_dspark_sps_table_path": null,
-    "speculative_dspark_confidence_sts_path": null,
-    "speculative_dspark_align_verify_tokens_to_graph_tier": false,
-    "speculative_accept_threshold_single": 1.0,
-    "speculative_accept_threshold_acc": 1.0,
-    "speculative_use_rejection_sampling": false,
-    "speculative_token_map": null,
-    "speculative_attention_mode": "prefill",
-    "speculative_draft_attention_backend": null,
-    "speculative_draft_window_size": null,
-    "speculative_moe_runner_backend": "auto",
-    "speculative_moe_a2a_backend": null,
-    "speculative_draft_model_quantization": "modelslim",
-    "_speculative_draft_quantization_explicitly_set": false,
-    "speculative_skip_dp_mlp_sync": false,
-    "enable_multi_layer_eagle": false,
-    "speculative_adaptive": false,
-    "speculative_adaptive_config": null,
-    "speculative_ngram_min_bfs_breadth": 1,
-    "speculative_ngram_max_bfs_breadth": 10,
-    "speculative_ngram_match_type": "BFS",
-    "speculative_ngram_max_trie_depth": 18,
-    "speculative_ngram_capacity": 10000000,
-    "speculative_ngram_external_corpus_path": null,
-    "speculative_ngram_external_sam_budget": 0,
-    "speculative_ngram_external_corpus_max_tokens": 10000000,
-    "decrypted_draft_config_file": null,
-    "enable_draft_weights_cpu_backup": false,
-            "draft_prefill": 0.0,
-            "draft_decode": 2.8761153002269566,
-            "draft_extend": 2.745437992736697
-            "speculative_algorithm": "EAGLE",
-            "speculative_draft_model_path": "/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8",
-            "speculative_draft_model_revision": null,
-            "speculative_draft_load_format": null,
-            "speculative_num_steps": 2,
-            "speculative_eagle_topk": 1,
-            "speculative_num_draft_tokens": 3,
-            "speculative_dflash_block_size": null,
-            "speculative_dspark_block_size": null,
-            "speculative_dspark_sps_table_path": null,
-            "speculative_dspark_confidence_sts_path": null,
-            "speculative_dspark_align_verify_tokens_to_graph_tier": false,
-            "speculative_accept_threshold_single": 1.0,
-            "speculative_accept_threshold_acc": 1.0,
-            "speculative_use_rejection_sampling": false,
-            "speculative_token_map": null,
-            "speculative_attention_mode": "prefill",
-            "speculative_draft_attention_backend": null,
-            "speculative_draft_window_size": null,
-            "speculative_moe_runner_backend": "auto",
-            "speculative_moe_a2a_backend": null,
-            "speculative_draft_model_quantization": "modelslim",
-            "_speculative_draft_quantization_explicitly_set": false,
-            "speculative_skip_dp_mlp_sync": false,
-            "enable_multi_layer_eagle": false,
-            "speculative_adaptive": false,
-            "speculative_adaptive_config": null,
-            "speculative_ngram_min_bfs_breadth": 1,
-            "speculative_ngram_max_bfs_breadth": 10,
-            "speculative_ngram_match_type": "BFS",
-            "speculative_ngram_max_trie_depth": 18,
-            "speculative_ngram_capacity": 10000000,
-            "speculative_ngram_external_corpus_path": null,
-            "speculative_ngram_external_sam_budget": 0,
-            "speculative_ngram_external_corpus_max_tokens": 10000000,
-            "decrypted_draft_config_file": null,
-            "enable_draft_weights_cpu_backup": false,
-                    "_speculative_moe_runner_default",
-                        "speculative_moe_runner_backend": "auto"
-            "max_speculative_num_draft_tokens": 3,
-                    "draft_prefill": 0.0,
-                    "draft_decode": 0.23,
-                    "draft_extend": 0.219
-                    "draft_prefill": 0.0,
-                    "draft_decode": 2.788334202952683,
-                    "draft_extend": 2.6821917896158993
-            "avg_spec_accept_length": 1.0
-            "speculative_algorithm": "EAGLE",
-            "speculative_draft_model_path": "/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8",
-            "speculative_draft_model_revision": null,
-            "speculative_draft_load_format": null,
-            "speculative_num_steps": 2,
-            "speculative_eagle_topk": 1,
-            "speculative_num_draft_tokens": 3,
-            "speculative_dflash_block_size": null,
-            "speculative_dspark_block_size": null,
-            "speculative_dspark_sps_table_path": null,
-            "speculative_dspark_confidence_sts_path": null,
-            "speculative_dspark_align_verify_tokens_to_graph_tier": false,
-            "speculative_accept_threshold_single": 1.0,
-            "speculative_accept_threshold_acc": 1.0,
-            "speculative_use_rejection_sampling": false,
-            "speculative_token_map": null,
-            "speculative_attention_mode": "prefill",
-            "speculative_draft_attention_backend": null,
-            "speculative_draft_window_size": null,
-            "speculative_moe_runner_backend": "auto",
-            "speculative_moe_a2a_backend": null,
-            "speculative_draft_model_quantization": "modelslim",
-            "_speculative_draft_quantization_explicitly_set": false,
-            "speculative_skip_dp_mlp_sync": false,
-            "enable_multi_layer_eagle": false,
-            "speculative_adaptive": false,
-            "speculative_adaptive_config": null,
-            "speculative_ngram_min_bfs_breadth": 1,
-            "speculative_ngram_max_bfs_breadth": 10,
-            "speculative_ngram_match_type": "BFS",
-            "speculative_ngram_max_trie_depth": 18,
-            "speculative_ngram_capacity": 10000000,
-            "speculative_ngram_external_corpus_path": null,
-            "speculative_ngram_external_sam_budget": 0,
-            "speculative_ngram_external_corpus_max_tokens": 10000000,
-            "decrypted_draft_config_file": null,
-            "enable_draft_weights_cpu_backup": false,
-                    "_speculative_moe_runner_default",
-                        "speculative_moe_runner_backend": "auto"
-            "max_speculative_num_draft_tokens": 3,
-                    "draft_prefill": 0.0,
-                    "draft_decode": 0.23,
-                    "draft_extend": 0.219
-                    "draft_prefill": 0.0,
-                    "draft_decode": 2.8761153002269566,
-                    "draft_extend": 2.684892799705267
-            "speculative_algorithm": "EAGLE",
-            "speculative_draft_model_path": "/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8",
-            "speculative_draft_model_revision": null,
-            "speculative_draft_load_format": null,
-            "speculative_num_steps": 2,
-            "speculative_eagle_topk": 1,
-            "speculative_num_draft_tokens": 3,
-            "speculative_dflash_block_size": null,
-            "speculative_dspark_block_size": null,
-            "speculative_dspark_sps_table_path": null,
-            "speculative_dspark_confidence_sts_path": null,
-            "speculative_dspark_align_verify_tokens_to_graph_tier": false,
-            "speculative_accept_threshold_single": 1.0,
-            "speculative_accept_threshold_acc": 1.0,
-            "speculative_use_rejection_sampling": false,
-            "speculative_token_map": null,
-            "speculative_attention_mode": "prefill",
-            "speculative_draft_attention_backend": null,
-            "speculative_draft_window_size": null,
-            "speculative_moe_runner_backend": "auto",
-            "speculative_moe_a2a_backend": null,
-            "speculative_draft_model_quantization": "modelslim",
-            "_speculative_draft_quantization_explicitly_set": false,
-            "speculative_skip_dp_mlp_sync": false,
-            "enable_multi_layer_eagle": false,
-            "speculative_adaptive": false,
-            "speculative_adaptive_config": null,
-            "speculative_ngram_min_bfs_breadth": 1,
-            "speculative_ngram_max_bfs_breadth": 10,
-            "speculative_ngram_match_type": "BFS",
-            "speculative_ngram_max_trie_depth": 18,
-            "speculative_ngram_capacity": 10000000,
-            "speculative_ngram_external_corpus_path": null,
-            "speculative_ngram_external_sam_budget": 0,
-            "speculative_ngram_external_corpus_max_tokens": 10000000,
-            "decrypted_draft_config_file": null,
-            "enable_draft_weights_cpu_backup": false,
-                    "_speculative_moe_runner_default",
-                        "speculative_moe_runner_backend": "auto"
-            "max_speculative_num_draft_tokens": 3,
-                    "draft_prefill": 0.0,
-                    "draft_decode": 0.23,
-                    "draft_extend": 0.219
-                    "draft_prefill": 0.0,
-                    "draft_decode": 2.86105343606323,
-                    "draft_extend": 2.5395394773222506
-            "speculative_algorithm": "EAGLE",
-            "speculative_draft_model_path": "/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8",
-            "speculative_draft_model_revision": null,
-            "speculative_draft_load_format": null,
-            "speculative_num_steps": 2,
-            "speculative_eagle_topk": 1,
-            "speculative_num_draft_tokens": 3,
-            "speculative_dflash_block_size": null,
-            "speculative_dspark_block_size": null,
-            "speculative_dspark_sps_table_path": null,
-            "speculative_dspark_confidence_sts_path": null,
-            "speculative_dspark_align_verify_tokens_to_graph_tier": false,
-            "speculative_accept_threshold_single": 1.0,
-            "speculative_accept_threshold_acc": 1.0,
-            "speculative_use_rejection_sampling": false,
-            "speculative_token_map": null,
-            "speculative_attention_mode": "prefill",
-            "speculative_draft_attention_backend": null,
-            "speculative_draft_window_size": null,
-            "speculative_moe_runner_backend": "auto",
-            "speculative_moe_a2a_backend": null,
-            "speculative_draft_model_quantization": "modelslim",
-            "_speculative_draft_quantization_explicitly_set": false,
-            "speculative_skip_dp_mlp_sync": false,
-            "enable_multi_layer_eagle": false,
-            "speculative_adaptive": false,
-            "speculative_adaptive_config": null,
-            "speculative_ngram_min_bfs_breadth": 1,
-            "speculative_ngram_max_bfs_breadth": 10,
-            "speculative_ngram_match_type": "BFS",
-            "speculative_ngram_max_trie_depth": 18,
-            "speculative_ngram_capacity": 10000000,
-            "speculative_ngram_external_corpus_path": null,
-            "speculative_ngram_external_sam_budget": 0,
-            "speculative_ngram_external_corpus_max_tokens": 10000000,
-            "decrypted_draft_config_file": null,
-            "enable_draft_weights_cpu_backup": false,
-                    "_speculative_moe_runner_default",
-                        "speculative_moe_runner_backend": "auto"
-            "max_speculative_num_draft_tokens": 3,
-                    "draft_prefill": 0.0,
-                    "draft_decode": 0.23,
-                    "draft_extend": 0.219
-                    "draft_prefill": 0.0,
-                    "draft_decode": 2.846034952905029,
-                    "draft_extend": 2.745437992736697
+
+[2026-08-10 14:58:28 DP2 TP2 EP2] Prefill batch, #new-seq: 1, #new-token: 128, #cached-token: 0, full token usage: 0.00, swa token usage: 0.04, #running-req: 0, #queue-req: 0, #pending-token: 0, npu graph: False, input throughput (token/s): 0.30
+[2026-08-10 14:58:30 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 128, full token usage: 0.00, #swa token: 128, swa token usage: 0.04, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 0.09, #queue-req: 0
+[2026-08-10 14:58:32 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 128, full token usage: 0.00, #swa token: 128, swa token usage: 0.04, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.26, #queue-req: 0
+[2026-08-10 14:58:35 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.98, #queue-req: 0
+[2026-08-10 14:58:37 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
+[2026-08-10 14:58:39 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.30, #queue-req: 0
+[2026-08-10 14:58:41 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.15, #queue-req: 0
+[2026-08-10 14:58:44 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.28, #queue-req: 0
+[2026-08-10 14:58:46 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.75, #queue-req: 0
+[2026-08-10 14:58:48 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 384, full token usage: 0.01, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.84, #queue-req: 0
+[2026-08-10 14:58:50 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.00, #queue-req: 0
+[2026-08-10 14:58:52 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
+[2026-08-10 14:58:55 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
+[2026-08-10 14:58:57 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
+[2026-08-10 14:58:59 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.55, #queue-req: 0
+[2026-08-10 14:59:01 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 640, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
+[2026-08-10 14:59:04 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.05, #queue-req: 0
+[2026-08-10 14:59:06 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.27, #queue-req: 0
+[2026-08-10 14:59:08 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.02, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.04, #queue-req: 0
+[2026-08-10 14:59:10 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 384, swa token usage: 0.12, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.06, #queue-req: 0
+[2026-08-10 14:59:12 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.09, #queue-req: 0
+[2026-08-10 14:59:15 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.02, #queue-req: 0
+[2026-08-10 14:59:17 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 896, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.12, #queue-req: 0
+[2026-08-10 14:59:19 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.17, #queue-req: 0
+[2026-08-10 14:59:21 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.18, #queue-req: 0
+[2026-08-10 14:59:23 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1024, full token usage: 0.03, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.94, #queue-req: 0
+[2026-08-10 14:59:26 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.03, #queue-req: 0
+[2026-08-10 14:59:28 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.11, #queue-req: 0
+[2026-08-10 14:59:30 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1152, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
+[2026-08-10 14:59:32 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.85, #queue-req: 0
+[2026-08-10 14:59:35 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 18.13, #queue-req: 0
+[2026-08-10 14:59:37 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1280, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.93, #queue-req: 0
+[2026-08-10 14:59:39 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.92, #queue-req: 0
+[2026-08-10 14:59:41 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.53, #queue-req: 0
+[2026-08-10 14:59:44 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1408, full token usage: 0.04, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.39, #queue-req: 0
+[2026-08-10 14:59:46 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 384, swa token usage: 0.12, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.75, #queue-req: 0
+[2026-08-10 14:59:48 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.81, #queue-req: 0
+[2026-08-10 14:59:50 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.73, #queue-req: 0
+[2026-08-10 14:59:53 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1536, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.03, #queue-req: 0
+[2026-08-10 14:59:55 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1664, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.57, #queue-req: 0
+[2026-08-10 14:59:57 DP2 TP2 EP2] Decode batch, #running-req: 1, #full token: 1664, full token usage: 0.05, #swa token: 256, swa token usage: 0.08, accept len: 1.00, accept rate: 0.00, npu graph: True, gen throughput (token/s): 17.29, #queue-req: 0
+[2026-08-10 14:59:58] INFO:     127.0.0.1:56176 - "POST /v1/chat/completions HTTP/1.1" 200 OK
