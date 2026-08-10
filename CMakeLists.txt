@@ -1,179 +1,133 @@
-(zpc_py311) w00580100@DevServer-BMS-57764ead:~/z50065249/sglang$ cd /home/w00580100/z50065249/sglang
-sed -n \
-sed -n \_draft_extend_for_decode/,/select_index/p' \
-  '/def _draft_extend_for_decode/,/select_index/p' \
-  python/sglang/srt/speculative/eagle_worker_v2.py |
-head -n 50
+conda activate zpc_py311
+
+cd /home/w00580100/z50065249/sglang
+
 MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-MODEL=/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-python - <<'PY'
-python - <<'PY'
-import jsonb import Path
-from pathlib import Path
-model = Path("/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8")
-model = Path("/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8")
-config = json.loads((model / "config.json").read_text())
-config = json.loads((model / "config.json").read_text())
-index = json.loads(_model_weights.safetensors.index.json").read_text()
-    (model / "quant_model_weights.safetensors.index.json").read_text()
-)
-weight_map = index.get("weight_map", {})
-weight_map = index.get("weight_map", {})
-keys = list(weight_map)
-patterns = (
-patterns = (ayers.43",
-    "model.layers.43",
-    "mtp",",
-    "nextn",head",
-    "shared_head",
-    "e_proj",
-    "h_proj",
-    "enorm",
-    "hnorm",
-)
-print("num_hidden_layers:",
-print("num_hidden_layers:",n_layers"))
-      config.get("num_hidden_layers"))
-print("num_nextn_predict_layers:",t_layers"))
-      config.get("num_nextn_predict_layers"))
-print("total indexed weights:", len(keys))
-matched = [
-matched = [ key in keys
-    key for key in keysey.lower() for pattern in patterns)
-    if any(pattern in key.lower() for pattern in patterns)
-]
-print("MTP/NextN matched weights:", len(matched))
-print("MTP/NextN matched weights:", len(matched))
-for key in matched[:100]:ht_map[key])
-    print(key, "->", weight_map[key])
-PY
+
+# ============================================================
+# 1. 加载CANN和自定义算子环境
+# ============================================================
+
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+
+source \
+  /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
+
+source \
+  /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
+
+# 使用物理NPU 2、3、6、7；
+# 在SGLang进程内部会重新映射为逻辑卡0、1、2、3
+export ASCEND_RT_VISIBLE_DEVICES=2,3,6,7
+
+# ============================================================
+# 2. Ascend运行时
+# ============================================================
+
+export TASK_QUEUE_ENABLE=1
+export STREAMS_PER_DEVICE=32
+export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+export INF_NAN_MODE_FORCE_DISABLE=1
+export SGLANG_SET_CPU_AFFINITY=1
+
+unset ASCEND_LAUNCH_BLOCKING
+
+export OMP_PROC_BIND=false
+export OMP_NUM_THREADS=10
+
+# ============================================================
+# 3. HCCL与DeepEP
+# ============================================================
+
+export HCCL_OP_EXPANSION_MODE=AIV
+export HCCL_BUFFSIZE=2048
+export DEEPEP_HCCL_BUFFSIZE=1000
+
+export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=24
+export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
+
+export DEEPEP_NORMAL_LONG_SEQ_ROUND=16
+export DEEPEP_NORMAL_LONG_SEQ_PER_ROUND_TOKENS=2048
+export DEEPEP_NORMAL_COMBINE_ENABLE_LONG_SEQ=1
+
+# ============================================================
+# 4. 关闭不适用于910B3 W4A8的GPU优化路径
+# ============================================================
+
+export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
+export SGLANG_OPT_FP8_WO_A_GEMM=0
+export SGLANG_OPT_USE_OVERLAP_STORE_CACHE=False
+
+# 这里必须是False，不能留空
+export SGLANG_DSV4_FP4_EXPERTS=False
+
+export SGLANG_OPT_FUSE_WQA_WKV=0
+export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
+export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
+export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
+export SGLANG_OPT_USE_TILELANG_MHC_POST=False
+
+# ============================================================
+# 5. MTP/EAGLE投机解码
+# ============================================================
+
+export SGLANG_ENABLE_SPEC_V2=1
 export FORCE_DRAFT_MODEL_NON_QUANT=1
-export FORCE_DRAFT_MODEL_NON_QUANT=1
-python - <<'PY'
-python - <<'PY'
-import os
-print(ORCE_DRAFT_MODEL_NON_QUANT =",
-    "FORCE_DRAFT_MODEL_NON_QUANT =",L_NON_QUANT")
-    os.environ.get("FORCE_DRAFT_MODEL_NON_QUANT")
-)Y
-PY
-    def _draft_extend_for_decode(
-        self, batch: ScheduleBatch, batch_result: GenerationBatchResult
-    ):
-        # Batch 2: Draft extend
-        draft_extend_input = EagleDraftExtendInput(
-            hidden_states=batch_result.logits_output.hidden_states,
-            # accept_lens includes the bonus token; correct drafts exclude it.
-            num_correct_drafts=batch_result.accept_lens - 1,
-            num_accept_tokens=batch_result.accept_lens,
-            # Draft-extend fills the whole tree width (num_draft_tokens) per req,
-            # not num_steps + 1, so DP MLP-sync padding stays consistent for topk > 1.
-            num_tokens_per_req=self.speculative_num_draft_tokens,
-            num_tokens_for_logprob_per_req=self.speculative_num_draft_tokens,
-        )
-        select_index = (
-num_hidden_layers: 43
-num_nextn_predict_layers: 1
-total indexed weights: 143179
-MTP/NextN matched weights: 9326
-mtp.0.attn.attn_sink -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.kv_norm.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.q_norm.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wkv.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wkv.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wkv.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wo_a.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wo_b.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_a.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_a.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_a.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_b.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_b.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn.wq_b.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.attn_norm.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.embed.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.0.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.1.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.10.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.100.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.101.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.102.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w1.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w1.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w1.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w1.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w2.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w2.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w2.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w2.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w3.scale_bias -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w3.weight -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w3.weight_offset -> quant_model_weights-00038-of-00038.safetensors
-mtp.0.ffn.experts.103.w3.weight_scale -> quant_model_weights-00038-of-00038.safetensors
-FORCE_DRAFT_MODEL_NON_QUANT = 1
+export SGLANG_SCHEDULER_DECREASE_PREFILL_IDLE=1
+
+# 第一阶段先关闭Plan Stream Overlap，
+# 普通SGLang Overlap Schedule仍然开启
+unset SGLANG_ENABLE_OVERLAP_PLAN_STREAM
+
+# ============================================================
+# 6. 关闭不必要的崩溃诊断
+# ============================================================
+
+export SGLANG_PYSPY_DUMP_BEFORE_CRASH=False
+export SGLANG_CUDA_COREDUMP_BEFORE_CRASH=False
+
+# ============================================================
+# 7. 确认关键环境变量
+# ============================================================
+
+env | grep -E \
+'ASCEND_RT_VISIBLE_DEVICES|FORCE_DRAFT_MODEL_NON_QUANT|SGLANG_ENABLE_SPEC_V2|SGLANG_ENABLE_OVERLAP_PLAN_STREAM|SGLANG_DSV4_FP4_EXPERTS|SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK'
+
+# ============================================================
+# 8. 启动SGLang
+# ============================================================
+
+python -m sglang.launch_server \
+  --model-path "$MODEL" \
+  --served-model-name deepseek-v4-flash-0731-w4a8 \
+  --trust-remote-code \
+  --device npu \
+  --dtype bfloat16 \
+  --quantization modelslim \
+  --attention-backend dsv4 \
+  --kv-cache-dtype bfloat16 \
+  --page-size 128 \
+  --tp-size 4 \
+  --dp-size 4 \
+  --ep-size 4 \
+  --enable-dp-attention \
+  --enable-dp-lm-head \
+  --moe-a2a-backend deepep \
+  --deepep-mode auto \
+  --deepep-dispatcher-output-dtype int8 \
+  --context-length 32768 \
+  --max-total-tokens 32768 \
+  --max-prefill-tokens 8192 \
+  --chunked-prefill-size -1 \
+  --prefill-max-requests 1 \
+  --max-running-requests 4 \
+  --mem-fraction-static 0.88 \
+  --cuda-graph-bs 1 2 4 \
+  --speculative-algorithm EAGLE \
+  --speculative-num-steps 2 \
+  --speculative-eagle-topk 1 \
+  --speculative-num-draft-tokens 3 \
+  --watchdog-timeout 9000 \
+  --host 0.0.0.0 \
+  --port 30000 \
+  2>&1 | tee dsv4_w4a8_mtp.log
