@@ -1,9 +1,438 @@
-curl -s http://127.0.0.1:30000/generate \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "text": "The capital of France is",
-    "sampling_params": {
-      "temperature": 0,
-      "max_new_tokens": 32
-    }
-  }'
+[2026-08-10 10:55:50 DP2 TP2 EP2] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4762, in run_scheduler_process
+    scheduler.run_event_loop()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1560, in run_event_loop
+    dispatch_event_loop(self)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4615, in dispatch_event_loop
+    scheduler.event_loop_normal()
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1602, in event_loop_normal
+    result = self.run_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/nvtx_utils.py", line 109, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 3524, in run_batch
+    batch_result = self.model_worker.forward_batch_generation(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 567, in forward_batch_generation
+    out = self.model_runner.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1378, in forward
+    output = self._forward_raw(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1563, in _forward_raw
+    ret = self.eager_runner.execute(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 206, in execute
+    return self._execute_extend(forward_batch, pp_proxy_tensors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 331, in _execute_extend
+    ret = model_runner.model.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2607, in forward
+    hidden_states = self.model.forward(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2415, in forward
+    hidden_states, prev_residual, prev_post, prev_comb = layer(
+                                                         ^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1751, in forward
+    hidden_states = self._run_moe_ffn_dp_sync(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1861, in _run_moe_ffn_dp_sync
+    hidden_states = self.mlp(
+                    ^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 933, in forward
+    return self.forward_deepep(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 1445, in forward_deepep
+    final_hidden_states = self.experts(
+                          ^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 175, in forward
+    return self.forward_impl(hidden_states, topk_output)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 184, in forward_impl
+    return super().forward_impl(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/fused_moe_triton/layer.py", line 1390, in forward_impl
+    dispatch_output = self.dispatcher.dispatch(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1108, in dispatch
+    return self._execute("dispatch", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1105, in _execute
+    return getattr(self._inners[tbo_subbatch_index or 0], name)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 932, in dispatch
+    ret = self.dispatch_b()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 951, in dispatch_b
+    return self._get_impl().dispatch_b(*inner_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 530, in dispatch_b
+    ) = self._dispatch_core(hidden_states, topk_ids, topk_weights, previous_event)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 579, in _dispatch_core
+    ) = buffer.dispatch(
+        ^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/utils.py", line 87, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/buffer.py", line 363, in dispatch
+    return self.normal_strategy.dispatch(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: AlltoAllNormalCommStrategy.dispatch() got an unexpected keyword argument 'quant_mode'
+
+[2026-08-10 10:55:50 DP3 TP3 EP3] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4762, in run_scheduler_process
+    scheduler.run_event_loop()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1560, in run_event_loop
+    dispatch_event_loop(self)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4615, in dispatch_event_loop
+    scheduler.event_loop_normal()
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1602, in event_loop_normal
+    result = self.run_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/nvtx_utils.py", line 109, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 3524, in run_batch
+    batch_result = self.model_worker.forward_batch_generation(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 567, in forward_batch_generation
+    out = self.model_runner.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1378, in forward
+    output = self._forward_raw(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1563, in _forward_raw
+    ret = self.eager_runner.execute(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 206, in execute
+    return self._execute_extend(forward_batch, pp_proxy_tensors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 331, in _execute_extend
+    ret = model_runner.model.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2607, in forward
+    hidden_states = self.model.forward(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2415, in forward
+    hidden_states, prev_residual, prev_post, prev_comb = layer(
+                                                         ^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1751, in forward
+    hidden_states = self._run_moe_ffn_dp_sync(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1861, in _run_moe_ffn_dp_sync
+    hidden_states = self.mlp(
+                    ^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 933, in forward
+    return self.forward_deepep(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 1445, in forward_deepep
+    final_hidden_states = self.experts(
+                          ^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 175, in forward
+    return self.forward_impl(hidden_states, topk_output)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 184, in forward_impl
+    return super().forward_impl(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/fused_moe_triton/layer.py", line 1390, in forward_impl
+    dispatch_output = self.dispatcher.dispatch(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1108, in dispatch
+    return self._execute("dispatch", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1105, in _execute
+    return getattr(self._inners[tbo_subbatch_index or 0], name)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 932, in dispatch
+    ret = self.dispatch_b()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 951, in dispatch_b
+    return self._get_impl().dispatch_b(*inner_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 530, in dispatch_b
+    ) = self._dispatch_core(hidden_states, topk_ids, topk_weights, previous_event)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 579, in _dispatch_core
+    ) = buffer.dispatch(
+        ^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/utils.py", line 87, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/buffer.py", line 363, in dispatch
+    return self.normal_strategy.dispatch(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: AlltoAllNormalCommStrategy.dispatch() got an unexpected keyword argument 'quant_mode'
+
+[2026-08-10 10:55:50 DP1 TP1 EP1] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4762, in run_scheduler_process
+    scheduler.run_event_loop()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1560, in run_event_loop
+    dispatch_event_loop(self)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4615, in dispatch_event_loop
+    scheduler.event_loop_normal()
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1602, in event_loop_normal
+    result = self.run_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/nvtx_utils.py", line 109, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 3524, in run_batch
+    batch_result = self.model_worker.forward_batch_generation(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 567, in forward_batch_generation
+    out = self.model_runner.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1378, in forward
+    output = self._forward_raw(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1563, in _forward_raw
+    ret = self.eager_runner.execute(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 206, in execute
+    return self._execute_extend(forward_batch, pp_proxy_tensors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 331, in _execute_extend
+    ret = model_runner.model.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2607, in forward
+    hidden_states = self.model.forward(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2415, in forward
+    hidden_states, prev_residual, prev_post, prev_comb = layer(
+                                                         ^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1751, in forward
+    hidden_states = self._run_moe_ffn_dp_sync(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1861, in _run_moe_ffn_dp_sync
+    hidden_states = self.mlp(
+                    ^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 933, in forward
+    return self.forward_deepep(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 1445, in forward_deepep
+    final_hidden_states = self.experts(
+                          ^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 175, in forward
+    return self.forward_impl(hidden_states, topk_output)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 184, in forward_impl
+    return super().forward_impl(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/fused_moe_triton/layer.py", line 1390, in forward_impl
+    dispatch_output = self.dispatcher.dispatch(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1108, in dispatch
+    return self._execute("dispatch", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1105, in _execute
+    return getattr(self._inners[tbo_subbatch_index or 0], name)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 932, in dispatch
+    ret = self.dispatch_b()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 951, in dispatch_b
+    return self._get_impl().dispatch_b(*inner_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 530, in dispatch_b
+    ) = self._dispatch_core(hidden_states, topk_ids, topk_weights, previous_event)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 579, in _dispatch_core
+    ) = buffer.dispatch(
+        ^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/utils.py", line 87, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/buffer.py", line 363, in dispatch
+    return self.normal_strategy.dispatch(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: AlltoAllNormalCommStrategy.dispatch() got an unexpected keyword argument 'quant_mode'
+
+[2026-08-10 10:55:50 DP0 TP0 EP0] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4762, in run_scheduler_process
+    scheduler.run_event_loop()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1560, in run_event_loop
+    dispatch_event_loop(self)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4615, in dispatch_event_loop
+    scheduler.event_loop_normal()
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 1602, in event_loop_normal
+    result = self.run_batch(batch)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/nvtx_utils.py", line 109, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 3524, in run_batch
+    batch_result = self.model_worker.forward_batch_generation(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 567, in forward_batch_generation
+    out = self.model_runner.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1378, in forward
+    output = self._forward_raw(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 1563, in _forward_raw
+    ret = self.eager_runner.execute(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 206, in execute
+    return self._execute_extend(forward_batch, pp_proxy_tensors)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/runner/eager_runner.py", line 331, in _execute_extend
+    ret = model_runner.model.forward(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2607, in forward
+    hidden_states = self.model.forward(
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 2415, in forward
+    hidden_states, prev_residual, prev_post, prev_comb = layer(
+                                                         ^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1751, in forward
+    hidden_states = self._run_moe_ffn_dp_sync(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v4.py", line 1861, in _run_moe_ffn_dp_sync
+    hidden_states = self.mlp(
+                    ^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 933, in forward
+    return self.forward_deepep(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/models/deepseek_v2.py", line 1445, in forward_deepep
+    final_hidden_states = self.experts(
+                          ^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 175, in forward
+    return self.forward_impl(hidden_states, topk_output)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/ep_moe/layer.py", line 184, in forward_impl
+    return super().forward_impl(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/fused_moe_triton/layer.py", line 1390, in forward_impl
+    dispatch_output = self.dispatcher.dispatch(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1108, in dispatch
+    return self._execute("dispatch", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/batch_overlap/two_batch_overlap.py", line 1105, in _execute
+    return getattr(self._inners[tbo_subbatch_index or 0], name)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 932, in dispatch
+    ret = self.dispatch_b()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 951, in dispatch_b
+    return self._get_impl().dispatch_b(*inner_state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 530, in dispatch_b
+    ) = self._dispatch_core(hidden_states, topk_ids, topk_weights, previous_event)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/layers/moe/token_dispatcher/deepep.py", line 579, in _dispatch_core
+    ) = buffer.dispatch(
+        ^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/utils.py", line 87, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/deep_ep/buffer.py", line 363, in dispatch
+    return self.normal_strategy.dispatch(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: AlltoAllNormalCommStrategy.dispatch() got an unexpected keyword argument 'quant_mode'
+
+[2026-08-10 10:55:52] Subprocess scheduler_0 (pid=3687744) crashed with exit code -3. Triggering SIGQUIT for cleanup...
+[2026-08-10 10:55:52] SIGQUIT received. signum=None, frame=None. It usually means one child failed.
+[2026-08-10 10:55:52] Sleeping 5 seconds before crash diagnostics to let GPU activity settle.
+[2026-08-10 10:55:57] No live scheduler processes found; skipping py-spy and CUDA coredump.
+[2026-08-10 10:55:57] kill_process_tree called: parent_pid=3686938, include_parent=True, pid=3686938
+Killed
