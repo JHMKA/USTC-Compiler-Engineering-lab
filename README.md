@@ -10,7 +10,6 @@ unset HCCL_OP_EXPANSION_MODE
 bash build.sh -a deepep2
 python -m pip uninstall -y deep-ep
 
-python -m pip install \
   --force-reinstall \
   output/deep_ep*.whl
 
