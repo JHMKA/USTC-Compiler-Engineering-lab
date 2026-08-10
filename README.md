@@ -1,21 +1,122 @@
-cd /home/w00580100/z50065249/sgl-kernel-npu
-
-find output -maxdepth 1 -type f -name 'deep_ep*.whl' -ls
-cd /home/w00580100/z50065249/sgl-kernel-npu
+cd /home/w00580100/z50065249/sglang
 
 conda activate zpc_py311
 
-git submodule update --init --recursive
+export ASCEND_RT_VISIBLE_DEVICES=2,3,6,7
 
-source /usr/local/Ascend/ascend-toolkit/set_env.sh
+export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+export STREAMS_PER_DEVICE=32
+export TASK_QUEUE_ENABLE=1
+export INF_NAN_MODE_FORCE_DISABLE=1
+
+export HCCL_SOCKET_IFNAME=lo
+export GLOO_SOCKET_IFNAME=lo
+export HCCL_BUFFSIZE=1024
+export DEEPEP_HCCL_BUFFSIZE=1024
 
 unset HCCL_OP_EXPANSION_MODE
 
-bash build.sh -a deepep2 2>&1 |
-tee /tmp/deepep2-build.log
+export DEEP_USE_MODE=default
+export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
+export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=64
 
-deepep_build_rc=${PIPESTATUS[0]}
+export SGLANG_DSV4_FP4_EXPERTS=False
+export SGLANG_OPT_FP8_WO_A_GEMM=0
+export SGLANG_OPT_FUSE_WQA_WKV=0
+export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
+export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
+export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
+export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
+export SGLANG_OPT_USE_TILELANG_MHC_POST=False
+SGLANG_ARGS=(
+  --model-path
+  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
 
-echo "build exit code: $deepep_build_rc"
+  --tokenizer-path
+  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
 
-find output -maxdepth 1 -type f -name 'deep_ep*.whl' -ls
+  --served-model-name
+  deepseek-v4-flash-0731-w4a8
+
+  --host
+  0.0.0.0
+
+  --port
+  30000
+
+  --device
+  npu
+
+  --trust-remote-code
+
+  --quantization
+  modelslim
+
+  --dtype
+  bfloat16
+
+  --kv-cache-dtype
+  bfloat16
+
+  --attention-backend
+  dsv4
+
+  --tp-size
+  4
+
+  --dp-size
+  4
+
+  --enable-dp-attention
+  --enable-dp-lm-head
+
+  --moe-a2a-backend
+  deepep
+
+  --deepep-mode
+  auto
+
+  --deepep-dispatcher-output-dtype
+  int8
+
+  --page-size
+  128
+
+  --context-length
+  32768
+
+  --max-total-tokens
+  32768
+
+  --max-prefill-tokens
+  8192
+
+  --max-running-requests
+  4
+
+  --chunked-prefill-size
+  -1
+
+  --mem-fraction-static
+  0.88
+
+  --disable-radix-cache
+  --disable-overlap-schedule
+
+  --cuda-graph-backend-decode
+  disabled
+
+  --cuda-graph-backend-prefill
+  disabled
+
+  --reasoning-parser
+  deepseek-v4
+
+  --tool-call-parser
+  deepseekv4
+
+  --watchdog-timeout
+  9000
+)
+
+python -m sglang.launch_server "${SGLANG_ARGS[@]}"
