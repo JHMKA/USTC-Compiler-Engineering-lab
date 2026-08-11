@@ -1,97 +1,21 @@
+DeepSeek‑V4 使用 NPU 专用 KV Cache 结构
+它不是普通 MHA/MLA Cache，而是由 SWA、C4、C128、Indexer 和压缩状态等多个缓存池组成。
 
-[2026-08-11 10:37:37 TP1 EP1] Capture target decode NPU graph end. elapsed=8.86 s, mem usage=6.41 GB, avail mem=13.13 GB.
-[2026-08-11 10:37:37 TP1 EP1] Init Unified Radix Cache. Components: (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>). Tree Core: UnifiedTreeCore
-[2026-08-11 10:37:37 TP1 EP1] attach_hybrid_pool_to_unified_cache failed
-Traceback (most recent call last):
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1650, in attach_hybrid_pool_to_unified_cache
-    result = strategy.build(
-             ^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1139, in build
-    host_pool_group, cache_controller = build_deepseek_v4_hicache_stack(
-                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 455, in build_deepseek_v4_hicache_stack
-    item_bytes=kvcache.swa_kv_pool.bytes_per_page_padded,
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'NPUDeepSeekV4SingleKVPool' object has no attribute 'bytes_per_page_padded'
-[2026-08-11 10:37:37 TP1 EP1] Scheduler hit an exception: Traceback (most recent call last):
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
-    scheduler = Scheduler(
-                ^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 511, in __init__
-    result = kv_cache_builder.build_kv_cache(
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_builder.py", line 244, in build_kv_cache
-    tree_cache = create_tree_cache(
-                 ^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 210, in create_tree_cache
-    cache = default_radix_cache_factory(ctx)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 112, in default_radix_cache_factory
-    return _create_unified_radix_cache(ctx, server_args, params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 189, in _create_unified_radix_cache
-    cache.init_hicache(server_args, params)
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/unified_radix_cache.py", line 349, in init_hicache
-    attach_hybrid_pool_to_unified_cache(
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1650, in attach_hybrid_pool_to_unified_cache
-    result = strategy.build(
-             ^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1139, in build
-    host_pool_group, cache_controller = build_deepseek_v4_hicache_stack(
-                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 455, in build_deepseek_v4_hicache_stack
-    item_bytes=kvcache.swa_kv_pool.bytes_per_page_padded,
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'NPUDeepSeekV4SingleKVPool' object has no attribute 'bytes_per_page_padded'
+现有 DeepSeek‑V4 HiCache 实现主要按 CUDA 缓存布局编写
+它依赖 bytes_per_page_padded 等 CUDA packed-layout 属性；910B3 使用 BF16 PA_ND 布局，没有这些属性，所以启动时首先出现：
+AttributeError: NPUDeepSeekV4SingleKVPool has no attribute bytes_per_page_padded
 
-[2026-08-11 10:37:37] Received sigquit from a child process. It usually means the child failed.
-[2026-08-11 10:37:37] kill_process_tree called: parent_pid=3372246, include_parent=True, pid=3372246
-[2026-08-11 10:37:37 TP0 EP0] Capture target decode NPU graph end. elapsed=8.94 s, mem usage=6.41 GB, avail mem=12.69 GB.
-[2026-08-11 10:37:37 TP0 EP0] max_total_num_tokens=32768, chunked_prefill_size=8192, max_prefill_tokens=8192, max_running_requests=4, context_len=32768, available_gpu_mem=12.69 GB
-[2026-08-11 10:37:37 TP0 EP0] Init Unified Radix Cache. Components: (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>). Tree Core: UnifiedTreeCore
-[2026-08-11 10:37:37 TP0 EP0] attach_hybrid_pool_to_unified_cache failed
-Traceback (most recent call last):
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1650, in attach_hybrid_pool_to_unified_cache
-    result = strategy.build(
-             ^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1139, in build
-    host_pool_group, cache_controller = build_deepseek_v4_hicache_stack(
-                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 455, in build_deepseek_v4_hicache_stack
-    item_bytes=kvcache.swa_kv_pool.bytes_per_page_padded,
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'NPUDeepSeekV4SingleKVPool' object has no attribute 'bytes_per_page_padded'
-[2026-08-11 10:37:37 TP0 EP0] Scheduler hit an exception: Traceback (most recent call last):
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
-    scheduler = Scheduler(
-                ^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 511, in __init__
-    result = kv_cache_builder.build_kv_cache(
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_builder.py", line 244, in build_kv_cache
-    tree_cache = create_tree_cache(
-                 ^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 210, in create_tree_cache
-    cache = default_radix_cache_factory(ctx)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 112, in default_radix_cache_factory
-    return _create_unified_radix_cache(ctx, server_args, params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/registry.py", line 189, in _create_unified_radix_cache
-    cache.init_hicache(server_args, params)
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/unified_radix_cache.py", line 349, in init_hicache
-    attach_hybrid_pool_to_unified_cache(
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1650, in attach_hybrid_pool_to_unified_cache
-    result = strategy.build(
-             ^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 1139, in build
-    host_pool_group, cache_controller = build_deepseek_v4_hicache_stack(
-                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/hybrid_cache/hybrid_pool_assembler.py", line 455, in build_deepseek_v4_hicache_stack
-    item_bytes=kvcache.swa_kv_pool.bytes_per_page_padded,
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'NPUDeepSeekV4SingleKVPool' object has no attribute 'bytes_per_page_padded'
+NPU 的 HiCache 搬运后端尚未接入 DSV4 Host Pool
+Ascend 会使用 kernel_ascend，但当前 DSV4 Host Pool 只实现了 CUDA 路径的 kernel/direct 搬运方式。
 
-[2026-08-11 10:37:37] Received sigquit from a child process. It usually means the child failed.
-[2026-08-11 10:37:37] kill_process_tree called: parent_pid=3372246, include_parent=True, pid=3372246
-Killed
+Indexer 数据格式不同
+NPU 实际使用独立的 int8 K 和 FP16 scale，而现有通用 DSV4 HiCache 缓存的是 CUDA 兼容 packed buffer。即使强行启动，恢复的 Indexer 也可能是错误数据。
+
+压缩状态布局不同
+NPU 使用 paged state，且 ring_size=0；现有 DSV4 HiCache 按 CUDA ring-buffer state 处理，布局和生命周期均不兼容。
+
+最关键的是缓存页号不能直接复用
+NPU 的 C4、C128、C4-state 和 C128-state 都有独立 allocator 与独立页表；当前 HiCache 却假设它们可以复用 FULL/SWA 页号。这可能导致不报错但读取错误 KV，产生静默的推理错误。
+
+因此可以概括为：
+910B3 支持通用 HiCache，但当前 SGLang 没有完成“Ascend NPU + DeepSeek‑V4 专用多缓存池”的组合适配。
