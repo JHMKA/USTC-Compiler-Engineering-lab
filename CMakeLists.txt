@@ -1,3 +1,5 @@
+
+[2026-08-11 10:37:37 TP1 EP1] Capture target decode NPU graph end. elapsed=8.86 s, mem usage=6.41 GB, avail mem=13.13 GB.
 [2026-08-11 10:37:37 TP1 EP1] Init Unified Radix Cache. Components: (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>). Tree Core: UnifiedTreeCore
 [2026-08-11 10:37:37 TP1 EP1] attach_hybrid_pool_to_unified_cache failed
 Traceback (most recent call last):
@@ -92,3 +94,4 @@ AttributeError: 'NPUDeepSeekV4SingleKVPool' object has no attribute 'bytes_per_p
 
 [2026-08-11 10:37:37] Received sigquit from a child process. It usually means the child failed.
 [2026-08-11 10:37:37] kill_process_tree called: parent_pid=3372246, include_parent=True, pid=3372246
+Killed
