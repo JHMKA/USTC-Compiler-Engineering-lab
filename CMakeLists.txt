@@ -36,7 +36,7 @@ unset FORCE_DRAFT_MODEL_NON_QUANT
 unset SGLANG_ENABLE_OVERLAP_PLAN_STREAM
 unset ASCEND_LAUNCH_BLOCKING
 
-nohup python -m sglang.launch_server \
+python -m sglang.launch_server \
   --model-path "$MODEL" \
   --served-model-name DeepSeek-V4-Flash-0731-w4a8 \
   --trust-remote-code \
@@ -59,13 +59,10 @@ nohup python -m sglang.launch_server \
   --chunked-prefill-size 8192 \
   --prefill-max-requests 1 \
   --max-running-requests 4 \
-  --mem-fraction-static 0.70 \
+  --mem-fraction-static 0.88 \
   --cuda-graph-bs 1 2 4 \
   --enable-hierarchical-cache \
   --hicache-ratio 2.0 \
   --hicache-write-policy write_through \
   --enable-metrics \
-  --watchdog-timeout 9000 \
-  > "$LOG" 2>&1 &
-
-echo "PID=$!  LOG=$LOG"
+  --watchdog-timeout 9000
