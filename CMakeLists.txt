@@ -1,343 +1,57 @@
-cd /home/w00580100/z50065249/sglang
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate zpc_py311
+/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch_npu/utils/collect_env.py:58: UserWarning: Warning: The /usr/local/Ascend/cann-9.0.0 owner does not match the current owner.
+  warnings.warn(f"Warning: The {path} owner does not match the current owner.")
+/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch_npu/utils/collect_env.py:58: UserWarning: Warning: The /usr/local/Ascend/cann-9.0.0/aarch64-linux/ascend_all_cann_install.info owner does not match the current owner.
+  warnings.warn(f"Warning: The {path} owner does not match the current owner.")
+/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch_npu/utils/collect_env.py:58: UserWarning: Warning: The /usr/local/Ascend/cann-9.0.0 owner does not match the current owner.
+  warnings.warn(f"Warning: The {path} owner does not match the current owner.")
+/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/site-packages/torch_npu/utils/collect_env.py:58: UserWarning: Warning: The /usr/local/Ascend/cann-9.0.0/aarch64-linux/ascend_all_cann_install.info owner does not match the current owner.
+  warnings.warn(f"Warning: The {path} owner does not match the current owner.")
+/home/w00580100/z50065249/sglang/python/sglang/launch_server.py:56: UserWarning: 'python -m sglang.launch_server' is still supported, but 'sglang serve' is the recommended entrypoint.
+  Example: sglang serve --model-path <model> [options]
+  warnings.warn(
+'--cuda-graph-bs' is deprecated and will be removed in a future release. Use '--cuda-graph-bs-decode' instead.
+[2026-08-17 10:56:34] KV cache is forced as chunk cache for decode server
+[2026-08-17 10:56:34] get env TRITON_CACHE_DIR = /home/w00580100/.cache/sglang/triton
+[2026-08-17 10:56:34] get env SGLANG_OPT_BF16_FP32_GEMM_ALGO = torch
+[2026-08-17 10:56:34] get env TORCHINDUCTOR_CACHE_DIR = /home/w00580100/.cache/sglang/inductor
+[2026-08-17 10:56:34] get env SGLANG_DSV4_FP4_EXPERTS = False
+[2026-08-17 10:56:35] Hybrid SWA model detected. architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 10:56:36] Use dsv4 attention backend for DeepseekV4ForCausalLM, setting page_size to 128.
+[2026-08-17 10:56:36] Setting swa_full_tokens_ratio to 0.1 for DeepseekV4ForCausalLM.
+[2026-08-17 10:56:37] DP attention is enabled. chunked prefill size is adjusted from -1 to -1.
+[2026-08-17 10:56:37] deepep MoE is enabled. The expert parallel size is adjusted from 1 to the tensor parallel size [4].
+[2026-08-17 10:56:39] get env ASCEND_CUSTOM_OPP_PATH = /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer:/usr/local/Ascend/cann-9.0.0/opp/vendors/customize:
+[2026-08-17 10:56:39] get env LD_LIBRARY_PATH = /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/op_api/lib/:/usr/local/Ascend/cann-9.0.0/opp/vendors/customize/op_api/lib/:/usr/local/Ascend/cann-9.0.0/lib64:/usr/local/Ascend/cann-9.0.0/lib64/plugin/opskernel:/usr/local/Ascend/cann-9.0.0/lib64/plugin/nnengine:/usr/local/Ascend/cann-9.0.0/opp/built-in/op_impl/ai_core/tbe/op_tiling/lib/linux/aarch64:/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver:/home/w00580100/Ascend/nnal/atb/latest/atb/cxx_abi_1/lib:/home/w00580100/Ascend/nnal/atb/latest/atb/cxx_abi_1/examples:/home/w00580100/Ascend/nnal/atb/latest/atb/cxx_abi_1/tests/atbopstest:/home/w00580100/Ascend/cann-9.0.0/lib64:/home/w00580100/Ascend/cann-9.0.0/lib64/plugin/opskernel:/home/w00580100/Ascend/cann-9.0.0/lib64/plugin/nnengine:/home/w00580100/Ascend/cann-9.0.0/opp/built-in/op_impl/ai_core/tbe/op_tiling/lib/linux/aarch64:/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver:/usr/local/Ascend/driver/lib64:/usr/local/Ascend/driver/lib64/common:/usr/local/Ascend/driver/lib64/driver
+[2026-08-17 10:56:40] Compiled-kernel caches now live under SGLANG_CACHE_DIR (/home/w00580100/.cache/sglang). These older directories are no longer used by sglang, but may still be used by other frameworks on this machine, so they were left alone: /home/w00580100/.triton. Remove them yourself if nothing else needs them.
+[2026-08-17 10:56:42] port 30234 is in use. Waiting for 15 seconds for dist_init_port to be available. dist_init_port is used by a process already. process.name()='python'' process.cmdline()=['python', '-m', 'sglang.launch_server', '--model-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--tokenizer-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--served-model-name', 'deepseek-v4-flash-0731-w4a8', '--host', '0.0.0.0', '--port', '30000', '--device', 'npu', '--trust-remote-code', '--quantization', 'modelslim', '--dtype', 'bfloat16', '--kv-cache-dtype', 'bfloat16', '--attention-backend', 'dsv4', '--tp-size', '4', '--dp-size', '4', '--enable-dp-attention', '--enable-dp-lm-head', '--moe-a2a-backend', 'deepep', '--deepep-mode', 'auto', '--deepep-dispatcher-output-dtype', 'int8', '--page-size', '128', '--context-length', '32768', '--max-total-tokens', '32768', '--max-prefill-tokens', '8192', '--max-running-requests', '4', '--chunked-prefill-size', '-1', '--mem-fraction-static', '0.88', '--disaggregation-mode', 'prefill', '--disaggregation-transfer-backend', 'ascend', '--disaggregation-bootstrap-port', '8998', '--reasoning-parser', 'deepseek-v4', '--tool-call-parser', 'deepseekv4', '--watchdog-timeout', '9000'] process.status()='sleeping' pid=118256
+[2026-08-17 10:56:42] port 30234 is in use. Waiting for 20 seconds for dist_init_port to be available. dist_init_port is used by a process already. process.name()='python'' process.cmdline()=['python', '-m', 'sglang.launch_server', '--model-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--tokenizer-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--served-model-name', 'deepseek-v4-flash-0731-w4a8', '--host', '0.0.0.0', '--port', '30000', '--device', 'npu', '--trust-remote-code', '--quantization', 'modelslim', '--dtype', 'bfloat16', '--kv-cache-dtype', 'bfloat16', '--attention-backend', 'dsv4', '--tp-size', '4', '--dp-size', '4', '--enable-dp-attention', '--enable-dp-lm-head', '--moe-a2a-backend', 'deepep', '--deepep-mode', 'auto', '--deepep-dispatcher-output-dtype', 'int8', '--page-size', '128', '--context-length', '32768', '--max-total-tokens', '32768', '--max-prefill-tokens', '8192', '--max-running-requests', '4', '--chunked-prefill-size', '-1', '--mem-fraction-static', '0.88', '--disaggregation-mode', 'prefill', '--disaggregation-transfer-backend', 'ascend', '--disaggregation-bootstrap-port', '8998', '--reasoning-parser', 'deepseek-v4', '--tool-call-parser', 'deepseekv4', '--watchdog-timeout', '9000'] process.status()='sleeping' pid=118256
+[2026-08-17 10:56:43] port 30234 is in use. Waiting for 25 seconds for dist_init_port to be available. dist_init_port is used by a process already. process.name()='python'' process.cmdline()=['python', '-m', 'sglang.launch_server', '--model-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--tokenizer-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--served-model-name', 'deepseek-v4-flash-0731-w4a8', '--host', '0.0.0.0', '--port', '30000', '--device', 'npu', '--trust-remote-code', '--quantization', 'modelslim', '--dtype', 'bfloat16', '--kv-cache-dtype', 'bfloat16', '--attention-backend', 'dsv4', '--tp-size', '4', '--dp-size', '4', '--enable-dp-attention', '--enable-dp-lm-head', '--moe-a2a-backend', 'deepep', '--deepep-mode', 'auto', '--deepep-dispatcher-output-dtype', 'int8', '--page-size', '128', '--context-length', '32768', '--max-total-tokens', '32768', '--max-prefill-tokens', '8192', '--max-running-requests', '4', '--chunked-prefill-size', '-1', '--mem-fraction-static', '0.88', '--disaggregation-mode', 'prefill', '--disaggregation-transfer-backend', 'ascend', '--disaggregation-bootstrap-port', '8998', '--reasoning-parser', 'deepseek-v4', '--tool-call-parser', 'deepseekv4', '--watchdog-timeout', '9000'] process.status()='sleeping' pid=118256
+[2026-08-17 10:56:44] Port is already in use. dist_init_port=30234 port_base=30235 detokenizer_port=30236 nccl_port=46593 scheduler_input_port=30239
+Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/server_args.py", line 9613, in init_new
+    wait_port_available(dist_init_port, "dist_init_port")
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/network.py", line 94, in wait_port_available
+    raise ValueError(
+ValueError: dist_init_port at 30234 is not available in 30 seconds. dist_init_port is used by a process already. process.name()='python'' process.cmdline()=['python', '-m', 'sglang.launch_server', '--model-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--tokenizer-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--served-model-name', 'deepseek-v4-flash-0731-w4a8', '--host', '0.0.0.0', '--port', '30000', '--device', 'npu', '--trust-remote-code', '--quantization', 'modelslim', '--dtype', 'bfloat16', '--kv-cache-dtype', 'bfloat16', '--attention-backend', 'dsv4', '--tp-size', '4', '--dp-size', '4', '--enable-dp-attention', '--enable-dp-lm-head', '--moe-a2a-backend', 'deepep', '--deepep-mode', 'auto', '--deepep-dispatcher-output-dtype', 'int8', '--page-size', '128', '--context-length', '32768', '--max-total-tokens', '32768', '--max-prefill-tokens', '8192', '--max-running-requests', '4', '--chunked-prefill-size', '-1', '--mem-fraction-static', '0.88', '--disaggregation-mode', 'prefill', '--disaggregation-transfer-backend', 'ascend', '--disaggregation-bootstrap-port', '8998', '--reasoning-parser', 'deepseek-v4', '--tool-call-parser', 'deepseekv4', '--watchdog-timeout', '9000'] process.status()='sleeping' pid=118256
+[2026-08-17 10:56:44] kill_process_tree called: parent_pid=2283842, include_parent=False, pid=2283842
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/w00580100/z50065249/sglang/python/sglang/launch_server.py", line 71, in <module>
+    run_server(server_args)
+  File "/home/w00580100/z50065249/sglang/python/sglang/launch_server.py", line 52, in run_server
+    launch_server(server_args)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/http_server.py", line 2748, in launch_server
+    ) = Engine._launch_subprocesses(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/engine.py", line 1070, in _launch_subprocesses
+    port_args = PortArgs.init_new(server_args)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/server_args.py", line 9613, in init_new
+    wait_port_available(dist_init_port, "dist_init_port")
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/utils/network.py", line 94, in wait_port_available
+    raise ValueError(
+ValueError: dist_init_port at 30234 is not available in 30 seconds. dist_init_port is used by a process already. process.name()='python'' process.cmdline()=['python', '-m', 'sglang.launch_server', '--model-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--tokenizer-path', '/home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8', '--served-model-name', 'deepseek-v4-flash-0731-w4a8', '--host', '0.0.0.0', '--port', '30000', '--device', 'npu', '--trust-remote-code', '--quantization', 'modelslim', '--dtype', 'bfloat16', '--kv-cache-dtype', 'bfloat16', '--attention-backend', 'dsv4', '--tp-size', '4', '--dp-size', '4', '--enable-dp-attention', '--enable-dp-lm-head', '--moe-a2a-backend', 'deepep', '--deepep-mode', 'auto', '--deepep-dispatcher-output-dtype', 'int8', '--page-size', '128', '--context-length', '32768', '--max-total-tokens', '32768', '--max-prefill-tokens', '8192', '--max-running-requests', '4', '--chunked-prefill-size', '-1', '--mem-fraction-static', '0.88', '--disaggregation-mode', 'prefill', '--disaggregation-transfer-backend', 'ascend', '--disaggregation-bootstrap-port', '8998', '--reasoning-parser', 'deepseek-v4', '--tool-call-parser', 'deepseekv4', '--watchdog-timeout', '9000'] process.status()='sleeping' pid=118256
+[ERROR] 2026-08-17-10:56:45 (PID:2283842, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception
 
-# ============================================================
-# CANN 基础环境
-# ============================================================
-source /usr/local/Ascend/cann-9.0.0/set_env.sh
-
-# 注册两个自定义算子 vendor
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
-
-# Prefill 独占 NPU 0~3
-export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3
-
-# ============================================================
-# 本机 PD 网络配置
-# ============================================================
-export PREFILL_IP=7.242.105.36
-export DECODE_IP=7.242.105.36
-export COMM_IFACE=enp67s0f5
-
-export HCCL_SOCKET_IFNAME="${COMM_IFACE}"
-export GLOO_SOCKET_IFNAME="${COMM_IFACE}"
-
-export HCCL_BUFFSIZE=1024
-export DEEPEP_HCCL_BUFFSIZE=1024
-
-# Prefill 和 Decode 必须使用同一 MF Store 地址
-export ASCEND_MF_STORE_URL="tcp://${PREFILL_IP}:24670"
-
-# PD 初始化和请求交接超时
-export SGLANG_DISAGGREGATION_BOOTSTRAP_TIMEOUT=1200
-export SGLANG_DISAGGREGATION_WAITING_TIMEOUT=1200
-
-# ============================================================
-# NPU runtime
-# ============================================================
-export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
-export STREAMS_PER_DEVICE=32
-export TASK_QUEUE_ENABLE=1
-export INF_NAN_MODE_FORCE_DISABLE=1
-
-unset HCCL_OP_EXPANSION_MODE
-
-# ============================================================
-# DeepSeek-V4 环境
-# ============================================================
-export DEEP_USE_MODE=default
-export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
-export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=64
-
-export SGLANG_DSV4_FP4_EXPERTS=False
-export SGLANG_OPT_FP8_WO_A_GEMM=0
-export SGLANG_OPT_FUSE_WQA_WKV=0
-export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
-export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
-export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
-export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
-export SGLANG_OPT_USE_TILELANG_MHC_POST=False
-
-export SGLANG_ENABLE_OVERLAP_PLAN_STREAM=1
-
-# ============================================================
-# 明确关闭投机解码
-# ============================================================
-unset SGLANG_ENABLE_SPEC_V2
-unset FORCE_DRAFT_MODEL_NON_QUANT
-unset SGLANG_SPEC_ENABLE_OVERLAP_REFLOW
-
-PREFILL_ARGS=(
-  --model-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --tokenizer-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --served-model-name
-  deepseek-v4-flash-0731-w4a8
-
-  --host
-  0.0.0.0
-
-  --port
-  30000
-
-  --device
-  npu
-
-  --trust-remote-code
-
-  --quantization
-  modelslim
-
-  --dtype
-  bfloat16
-
-  --kv-cache-dtype
-  bfloat16
-
-  --attention-backend
-  dsv4
-
-  --tp-size
-  4
-
-  --dp-size
-  4
-
-  --enable-dp-attention
-  --enable-dp-lm-head
-
-  --moe-a2a-backend
-  deepep
-
-  --deepep-mode
-  auto
-
-  --deepep-dispatcher-output-dtype
-  int8
-
-  --page-size
-  128
-
-  --context-length
-  32768
-
-  --max-total-tokens
-  32768
-
-  --max-prefill-tokens
-  8192
-
-  --max-running-requests
-  4
-
-  --chunked-prefill-size
-  -1
-
-  --mem-fraction-static
-  0.88
-
-  --disaggregation-mode
-  prefill
-
-  --disaggregation-transfer-backend
-  ascend
-
-  --disaggregation-bootstrap-port
-  8998
-
-  --reasoning-parser
-  deepseek-v4
-
-  --tool-call-parser
-  deepseekv4
-
-  --watchdog-timeout
-  9000
-)
-
-exec python -m sglang.launch_server "${PREFILL_ARGS[@]}"
-2. Decode + HiSparse 完整命令
-在第二个终端执行：
-cd /home/w00580100/z50065249/sglang
-
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate zpc_py311
-
-# ============================================================
-# CANN 基础环境
-# ============================================================
-source /usr/local/Ascend/cann-9.0.0/set_env.sh
-
-# 注册两个自定义算子 vendor
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
-
-# Decode 独占 NPU 4~7
-export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
-
-# ============================================================
-# 本机 PD 网络配置
-# ============================================================
-export PREFILL_IP=7.242.105.36
-export DECODE_IP=7.242.105.36
-export COMM_IFACE=enp67s0f5
-
-export HCCL_SOCKET_IFNAME="${COMM_IFACE}"
-export GLOO_SOCKET_IFNAME="${COMM_IFACE}"
-
-export HCCL_BUFFSIZE=1024
-export DEEPEP_HCCL_BUFFSIZE=1024
-
-# 必须与 Prefill 端完全一致
-export ASCEND_MF_STORE_URL="tcp://${PREFILL_IP}:24670"
-
-export SGLANG_DISAGGREGATION_BOOTSTRAP_TIMEOUT=1200
-export SGLANG_DISAGGREGATION_WAITING_TIMEOUT=1200
-
-# ============================================================
-# NPU runtime
-# ============================================================
-export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
-export STREAMS_PER_DEVICE=32
-export TASK_QUEUE_ENABLE=1
-export INF_NAN_MODE_FORCE_DISABLE=1
-
-unset HCCL_OP_EXPANSION_MODE
-
-# ============================================================
-# DeepSeek-V4 环境
-# ============================================================
-export DEEP_USE_MODE=default
-export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
-export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=64
-
-export SGLANG_DSV4_FP4_EXPERTS=False
-export SGLANG_OPT_FP8_WO_A_GEMM=0
-export SGLANG_OPT_FUSE_WQA_WKV=0
-export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
-export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
-export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
-export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
-export SGLANG_OPT_USE_TILELANG_MHC_POST=False
-
-export SGLANG_ENABLE_OVERLAP_PLAN_STREAM=1
-
-# ============================================================
-# 明确关闭投机解码
-# ============================================================
-unset SGLANG_ENABLE_SPEC_V2
-unset FORCE_DRAFT_MODEL_NON_QUANT
-unset SGLANG_SPEC_ENABLE_OVERLAP_REFLOW
-
-DECODE_ARGS=(
-  --model-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --tokenizer-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --served-model-name
-  deepseek-v4-flash-0731-w4a8
-
-  --host
-  0.0.0.0
-
-  --port
-  30001
-
-  --device
-  npu
-
-  --trust-remote-code
-
-  --quantization
-  modelslim
-
-  --dtype
-  bfloat16
-
-  --kv-cache-dtype
-  bfloat16
-
-  --attention-backend
-  dsv4
-
-  --tp-size
-  4
-
-  --dp-size
-  4
-
-  --enable-dp-attention
-  --enable-dp-lm-head
-
-  --moe-a2a-backend
-  deepep
-
-  --deepep-mode
-  auto
-
-  --deepep-dispatcher-output-dtype
-  int8
-
-  --page-size
-  128
-
-  --context-length
-  32768
-
-  --max-total-tokens
-  32768
-
-  --max-prefill-tokens
-  8192
-
-  --max-running-requests
-  4
-
-  --chunked-prefill-size
-  -1
-
-  --mem-fraction-static
-  0.88
-
-  --cuda-graph-bs
-  1
-  2
-  4
-
-  --disaggregation-mode
-  decode
-
-  --disaggregation-transfer-backend
-  ascend
-
-  --disaggregation-bootstrap-port
-  8998
-
-  # HiSparse 当前要求关闭 Radix Cache
-  --disable-radix-cache
-
-  # HiSparse 只在 Decode 端开启
-  --enable-hisparse
-
-  --hisparse-config
-  '{"top_k":2048,"device_buffer_size":6144,"host_to_device_ratio":4,"swap_in_block_size":960}'
-
-  --reasoning-parser
-  deepseek-v4
-
-  --tool-call-parser
-  deepseekv4
-
-  --watchdog-timeout
-  9000
-)
-
-exec python -m sglang.launch_server "${DECODE_ARGS[@]}"
