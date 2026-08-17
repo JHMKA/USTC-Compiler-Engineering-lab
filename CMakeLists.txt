@@ -1,21 +1,142 @@
-DeepSeek‑V4 使用 NPU 专用 KV Cache 结构
-它不是普通 MHA/MLA Cache，而是由 SWA、C4、C128、Indexer 和压缩状态等多个缓存池组成。
+cd /home/w00580100/z50065249/sglang
 
-现有 DeepSeek‑V4 HiCache 实现主要按 CUDA 缓存布局编写
-它依赖 bytes_per_page_padded 等 CUDA packed-layout 属性；910B3 使用 BF16 PA_ND 布局，没有这些属性，所以启动时首先出现：
-AttributeError: NPUDeepSeekV4SingleKVPool has no attribute bytes_per_page_padded
+conda activate zpc_py311
+# 1. CANN 基础环境
+source /usr/local/Ascend/cann-9.0.0/set_env.sh
+export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3
 
-NPU 的 HiCache 搬运后端尚未接入 DSV4 Host Pool
-Ascend 会使用 kernel_ascend，但当前 DSV4 Host Pool 只实现了 CUDA 路径的 kernel/direct 搬运方式。
+# 2. 注册两个自定义算子 vendor —— 关键，之前缺 ASCEND_CUSTOM_OPP_PATH
+source /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
+source /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
 
-Indexer 数据格式不同
-NPU 实际使用独立的 int8 K 和 FP16 scale，而现有通用 DSV4 HiCache 缓存的是 CUDA 兼容 packed buffer。即使强行启动，恢复的 Indexer 也可能是错误数据。
+export ASCEND_RT_VISIBLE_DEVICES=2,3,6,7
 
-压缩状态布局不同
-NPU 使用 paged state，且 ring_size=0；现有 DSV4 HiCache 按 CUDA ring-buffer state 处理，布局和生命周期均不兼容。
+export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+export STREAMS_PER_DEVICE=32
+export TASK_QUEUE_ENABLE=1
+export INF_NAN_MODE_FORCE_DISABLE=1
 
-最关键的是缓存页号不能直接复用
-NPU 的 C4、C128、C4-state 和 C128-state 都有独立 allocator 与独立页表；当前 HiCache 却假设它们可以复用 FULL/SWA 页号。这可能导致不报错但读取错误 KV，产生静默的推理错误。
+export HCCL_SOCKET_IFNAME=lo
+export GLOO_SOCKET_IFNAME=lo
+export HCCL_BUFFSIZE=1024
+export DEEPEP_HCCL_BUFFSIZE=1024
 
-因此可以概括为：
-910B3 支持通用 HiCache，但当前 SGLang 没有完成“Ascend NPU + DeepSeek‑V4 专用多缓存池”的组合适配。
+unset HCCL_OP_EXPANSION_MODE
+
+export DEEP_USE_MODE=default
+export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
+export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=64
+
+export SGLANG_DSV4_FP4_EXPERTS=False
+export SGLANG_OPT_FP8_WO_A_GEMM=0
+export SGLANG_OPT_FUSE_WQA_WKV=0
+export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
+export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
+export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
+export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
+export SGLANG_OPT_USE_TILELANG_MHC_POST=False
+
+export SGLANG_ENABLE_SPEC_V2=1
+export SGLANG_ENABLE_OVERLAP_PLAN_STREAM=1
+export FORCE_DRAFT_MODEL_NON_QUANT=1
+
+SGLANG_ARGS=(
+  --model-path
+  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+
+  --tokenizer-path
+  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
+
+  --served-model-name
+  deepseek-v4-flash-0731-w4a8
+
+  --host
+  0.0.0.0
+
+  --port
+  30000
+
+  --device
+  npu
+
+  --trust-remote-code
+
+  --quantization
+  modelslim
+
+  --dtype
+  bfloat16
+
+  --kv-cache-dtype
+  bfloat16
+
+  --attention-backend
+  dsv4
+
+  --tp-size
+  4
+
+  --dp-size
+  4
+
+  --enable-dp-attention
+  --enable-dp-lm-head
+
+  --moe-a2a-backend
+  deepep
+
+  --deepep-mode
+  auto
+
+  --deepep-dispatcher-output-dtype
+  int8
+
+  --page-size
+  128
+
+  --context-length
+  32768
+
+  --max-total-tokens
+  32768
+
+  --max-prefill-tokens
+  8192
+
+  --max-running-requests
+  4
+
+  --chunked-prefill-size
+  -1
+
+  --mem-fraction-static
+  0.88
+
+  --cuda-graph-bs
+  1
+  2
+  4
+
+  --speculative-algorithm
+  EAGLE
+
+  --speculative-num-steps
+  2
+
+  --speculative-eagle-topk
+  1
+
+  --speculative-num-draft-tokens
+  3
+
+  --reasoning-parser
+  deepseek-v4
+
+  --tool-call-parser
+  deepseekv4
+
+  --watchdog-timeout
+  9000
+)
+
+python -m sglang.launch_server "${SGLANG_ARGS[@]}"
