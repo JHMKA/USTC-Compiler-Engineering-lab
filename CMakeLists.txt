@@ -1,160 +1,182 @@
-cd /home/w00580100/z50065249/sglang
 
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate zpc_py311
+[2026-08-17 11:03:07 DP0 TP0 EP0] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
+    scheduler = Scheduler(
+                ^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 505, in __init__
+    self.init_model_worker()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 981, in init_model_worker
+    self.init_memory_pools()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 952, in init_memory_pools
+    self.init_target_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 948, in init_target_memory_pool
+    self.tp_worker.alloc_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 402, in alloc_memory_pool
+    self.model_runner.alloc_memory_pool(memory_pool_config)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 808, in alloc_memory_pool
+    result = self.kv_cache_configurator.configure(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 255, in configure
+    pools = self._init_pools(
+            ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 424, in _init_pools
+    token_to_kv_pool = self._build_token_to_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 871, in _build_token_to_kv_pool
+    token_to_kv_pool = self._build_dsv4_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 1020, in _build_dsv4_kv_pool
+    token_to_kv_pool = pool_cls(
+                       ^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py", line 622, in __init__
+    self.c4_kv_pool = self._make_kv_pool(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/hardware_backend/npu/dsv4/dsv4_memory_pool.py", line 300, in _make_kv_pool
+    assert cls is DeepSeekV4SingleKVPool, (
+AssertionError: enable_hisparse is not supported on the NPU DSV4 KV pool (got c4 pool class HiSparseC4DevicePool).
 
-source /usr/local/Ascend/cann-9.0.0/set_env.sh
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/customize/bin/set_env.bash
-source /usr/local/Ascend/cann-9.0.0/opp/vendors/custom_transformer/bin/set_env.bash
+[2026-08-17 11:03:07 DP1 TP1 EP1] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
+    scheduler = Scheduler(
+                ^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 505, in __init__
+    self.init_model_worker()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 981, in init_model_worker
+    self.init_memory_pools()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 952, in init_memory_pools
+    self.init_target_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 948, in init_target_memory_pool
+    self.tp_worker.alloc_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 402, in alloc_memory_pool
+    self.model_runner.alloc_memory_pool(memory_pool_config)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 808, in alloc_memory_pool
+    result = self.kv_cache_configurator.configure(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 255, in configure
+    pools = self._init_pools(
+            ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 424, in _init_pools
+    token_to_kv_pool = self._build_token_to_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 871, in _build_token_to_kv_pool
+    token_to_kv_pool = self._build_dsv4_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 1020, in _build_dsv4_kv_pool
+    token_to_kv_pool = pool_cls(
+                       ^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py", line 622, in __init__
+    self.c4_kv_pool = self._make_kv_pool(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/hardware_backend/npu/dsv4/dsv4_memory_pool.py", line 300, in _make_kv_pool
+    assert cls is DeepSeekV4SingleKVPool, (
+AssertionError: enable_hisparse is not supported on the NPU DSV4 KV pool (got c4 pool class HiSparseC4DevicePool).
 
-export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
+[2026-08-17 11:03:07 DP3 TP3 EP3] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
+    scheduler = Scheduler(
+                ^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 505, in __init__
+    self.init_model_worker()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 981, in init_model_worker
+    self.init_memory_pools()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 952, in init_memory_pools
+    self.init_target_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 948, in init_target_memory_pool
+    self.tp_worker.alloc_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 402, in alloc_memory_pool
+    self.model_runner.alloc_memory_pool(memory_pool_config)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 808, in alloc_memory_pool
+    result = self.kv_cache_configurator.configure(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 255, in configure
+    pools = self._init_pools(
+            ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 424, in _init_pools
+    token_to_kv_pool = self._build_token_to_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 871, in _build_token_to_kv_pool
+    token_to_kv_pool = self._build_dsv4_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 1020, in _build_dsv4_kv_pool
+    token_to_kv_pool = pool_cls(
+                       ^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py", line 622, in __init__
+    self.c4_kv_pool = self._make_kv_pool(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/hardware_backend/npu/dsv4/dsv4_memory_pool.py", line 300, in _make_kv_pool
+    assert cls is DeepSeekV4SingleKVPool, (
+AssertionError: enable_hisparse is not supported on the NPU DSV4 KV pool (got c4 pool class HiSparseC4DevicePool).
 
-export PREFILL_IP=7.242.105.36
-export DECODE_IP=7.242.105.36
-export COMM_IFACE=enp67s0f5
+[2026-08-17 11:03:07 DP2 TP2 EP2] Scheduler hit an exception: Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 4986, in run_scheduler_process
+    scheduler = Scheduler(
+                ^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 505, in __init__
+    self.init_model_worker()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 981, in init_model_worker
+    self.init_memory_pools()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 952, in init_memory_pools
+    self.init_target_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/scheduler.py", line 948, in init_target_memory_pool
+    self.tp_worker.alloc_memory_pool()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/managers/tp_worker.py", line 402, in alloc_memory_pool
+    self.model_runner.alloc_memory_pool(memory_pool_config)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/model_executor/model_runner.py", line 808, in alloc_memory_pool
+    result = self.kv_cache_configurator.configure(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 255, in configure
+    pools = self._init_pools(
+            ^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 424, in _init_pools
+    token_to_kv_pool = self._build_token_to_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 871, in _build_token_to_kv_pool
+    token_to_kv_pool = self._build_dsv4_kv_pool(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/kv_cache_configurator.py", line 1020, in _build_dsv4_kv_pool
+    token_to_kv_pool = pool_cls(
+                       ^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/mem_cache/deepseek_v4_memory_pool.py", line 622, in __init__
+    self.c4_kv_pool = self._make_kv_pool(
+                      ^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/hardware_backend/npu/dsv4/dsv4_memory_pool.py", line 300, in _make_kv_pool
+    assert cls is DeepSeekV4SingleKVPool, (
+AssertionError: enable_hisparse is not supported on the NPU DSV4 KV pool (got c4 pool class HiSparseC4DevicePool).
 
-export HCCL_SOCKET_IFNAME="${COMM_IFACE}"
-export GLOO_SOCKET_IFNAME="${COMM_IFACE}"
-export HCCL_BUFFSIZE=1024
-export DEEPEP_HCCL_BUFFSIZE=1024
+[2026-08-17 11:03:08] kill_process_tree called: parent_pid=2293894, include_parent=False, pid=2293894
+Traceback (most recent call last):
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/engine.py", line 1757, in _wait_for_scheduler_ready
+    data = scheduler_pipe_readers[i].recv()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/multiprocessing/connection.py", line 249, in recv
+    buf = self._recv_bytes()
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/multiprocessing/connection.py", line 413, in _recv_bytes
+    buf = self._recv(4)
+          ^^^^^^^^^^^^^
+  File "/home/w00580100/miniconda3/envs/zpc_py311/lib/python3.11/multiprocessing/connection.py", line 382, in _recv
+    raise EOFError
+EOFError
 
-export ASCEND_MF_STORE_URL="tcp://${PREFILL_IP}:24670"
-export SGLANG_DISAGGREGATION_BOOTSTRAP_TIMEOUT=1200
-export SGLANG_DISAGGREGATION_WAITING_TIMEOUT=1200
+During handling of the above exception, another exception occurred:
 
-export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
-export STREAMS_PER_DEVICE=32
-export TASK_QUEUE_ENABLE=1
-export INF_NAN_MODE_FORCE_DISABLE=1
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/w00580100/z50065249/sglang/python/sglang/launch_server.py", line 71, in <module>
+    run_server(server_args)
+  File "/home/w00580100/z50065249/sglang/python/sglang/launch_server.py", line 52, in run_server
+    launch_server(server_args)
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/http_server.py", line 2748, in launch_server
+    ) = Engine._launch_subprocesses(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/engine.py", line 1197, in _launch_subprocesses
+    scheduler_init_result.wait_for_ready()
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/engine.py", line 924, in wait_for_ready
+    infos = _wait_for_scheduler_ready(scheduler_pipe_readers, scheduler_procs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/w00580100/z50065249/sglang/python/sglang/srt/entrypoints/engine.py", line 1759, in _wait_for_scheduler_ready
+    raise _scheduler_died_error(i, scheduler_procs[i])
+RuntimeError: Rank 0 scheduler died during initialization (exit code: -3). If exit code is -9 (SIGKILL), a common cause is the OS OOM killer. Run `dmesg -T | grep -i oom` to check.
+[ERROR] 2026-08-17-11:03:09 (PID:2293894, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception
 
-unset HCCL_OP_EXPANSION_MODE
-
-export DEEP_USE_MODE=default
-export DEEP_NORMAL_MODE_USE_INT8_QUANT=1
-export SGLANG_DEEPEP_NUM_MAX_DISPATCH_TOKENS_PER_RANK=64
-
-export SGLANG_DSV4_FP4_EXPERTS=False
-export SGLANG_OPT_FP8_WO_A_GEMM=0
-export SGLANG_OPT_FUSE_WQA_WKV=0
-export SGLANG_OPT_BF16_FP32_GEMM_ALGO=torch
-export SGLANG_OPT_USE_FUSED_HASH_TOPK=False
-export SGLANG_OPT_USE_TILELANG_MHC_PRE=False
-export SGLANG_OPT_DEEPGEMM_HC_PRENORM=False
-export SGLANG_OPT_USE_TILELANG_MHC_POST=False
-
-export SGLANG_ENABLE_OVERLAP_PLAN_STREAM=1
-
-unset SGLANG_ENABLE_SPEC_V2
-unset FORCE_DRAFT_MODEL_NON_QUANT
-unset SGLANG_SPEC_ENABLE_OVERLAP_REFLOW
-
-DECODE_ARGS=(
-  --model-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --tokenizer-path
-  /home/w00580100/model/DeepSeek-V4-Flash-0731-w4a8
-
-  --served-model-name
-  deepseek-v4-flash-0731-w4a8
-
-  --host
-  0.0.0.0
-
-  --port
-  30001
-
-  --dist-init-addr
-  127.0.0.1:32000
-
-  --nccl-port
-  32010
-
-  --device
-  npu
-
-  --trust-remote-code
-
-  --quantization
-  modelslim
-
-  --dtype
-  bfloat16
-
-  --kv-cache-dtype
-  bfloat16
-
-  --attention-backend
-  dsv4
-
-  --tp-size
-  4
-
-  --dp-size
-  4
-
-  --enable-dp-attention
-  --enable-dp-lm-head
-
-  --moe-a2a-backend
-  deepep
-
-  --deepep-mode
-  auto
-
-  --deepep-dispatcher-output-dtype
-  int8
-
-  --page-size
-  128
-
-  --context-length
-  32768
-
-  --max-total-tokens
-  32768
-
-  --max-prefill-tokens
-  8192
-
-  --max-running-requests
-  4
-
-  --chunked-prefill-size
-  -1
-
-  --mem-fraction-static
-  0.88
-
-  --cuda-graph-bs-decode
-  1
-  2
-  4
-
-  --disaggregation-mode
-  decode
-
-  --disaggregation-transfer-backend
-  ascend
-
-  --disaggregation-bootstrap-port
-  8998
-
-  --disable-radix-cache
-
-  --enable-hisparse
-
-  --hisparse-config
-  '{"top_k":2048,"device_buffer_size":6144,"host_to_device_ratio":4,"swap_in_block_size":960}'
-
-  --reasoning-parser
-  deepseek-v4
-
-  --tool-call-parser
-  deepseekv4
-
-  --watchdog-timeout
-  9000
-)
-
-exec python -m sglang.launch_server "${DECODE_ARGS[@]}"
